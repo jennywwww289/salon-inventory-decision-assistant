@@ -65,15 +65,15 @@ export const UsersView: React.FC = () => {
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">人員與角色情境示範（{users.length} 位）</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="type-page-title text-slate-900 tracking-tight">人員與角色情境示範（{users.length} 位）</h1>
+          <p className="type-detail text-slate-500 mt-1">
             角色切換供操作情境展示，目前未提供登入驗證與權限隔離。
           </p>
-          <p className="text-xs text-slate-500 mt-1">切換會改變操作人顯示及後續紀錄的經手人；新增人員只建立目前的示範檔案，不會建立登入帳號。</p>
+          <p className="type-detail text-slate-500 mt-1">切換會改變操作人顯示及後續紀錄的經手人；新增人員只建立目前的示範檔案，不會建立登入帳號。</p>
         </div>
         <button
           onClick={() => setIsAddUserOpen(true)}
-          className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="type-label px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <UserPlus size={16} />
           <span>新增門市人員</span>
@@ -81,7 +81,7 @@ export const UsersView: React.FC = () => {
       </div>
 
       {/* 2. Active User Switcher Box for Prototype Evaluation */}
-      <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+      <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 type-detail">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-800 text-white font-bold flex items-center justify-center shrink-0">
             {currentUser.avatar}
@@ -89,17 +89,17 @@ export const UsersView: React.FC = () => {
           <div>
             <div className="font-bold text-emerald-950 flex items-center gap-2">
               <span>目前操作視角：{currentUser.name}</span>
-              <span className="text-[11px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono">
+              <span className="type-detail bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-mono">
                 {currentUser.role}
               </span>
             </div>
-            <div className="text-slate-600 text-[11px]">
+            <div className="text-slate-600 type-detail">
               職稱：{currentUser.title} · {roleDescriptions[currentUser.role]?.desc}
             </div>
           </div>
         </div>
 
-        <div className="text-[11px] text-slate-500 font-mono">
+        <div className="type-detail text-slate-500 font-mono">
           點選下方卡片「切換至此視角」可體驗不同人員之日常操作
         </div>
       </div>
@@ -117,30 +117,30 @@ export const UsersView: React.FC = () => {
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-sm border border-slate-200">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center type-detail border border-slate-200">
                     {u.avatar}
                   </div>
-                  <span className={`text-[11px] font-mono px-2 py-0.5 rounded font-semibold ${
-                    u.role === 'Owner' ? 'bg-purple-50 text-purple-700' :
-                    u.role === 'Manager' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-700'
-                  }`}>
+                  <span className={`type-number  font-mono px-2 py-0.5 rounded ${
+ u.role === 'Owner' ? 'bg-purple-50 text-purple-700' :
+ u.role === 'Manager' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-700'
+ }`}>
                     {u.role}
                   </span>
                 </div>
 
-                <h3 className="font-bold text-base text-slate-900 mb-0.5">{u.name}</h3>
-                <p className="text-xs text-slate-500 mb-3">{u.title}</p>
+                <h3 className="type-item-title text-slate-900 mb-0.5">{u.name}</h3>
+                <p className="type-detail text-slate-500 mb-3">{u.title}</p>
 
                 {u.phone && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-4 font-mono">
+                  <div className="flex items-center gap-1.5 type-detail text-slate-600 mb-4 font-mono">
                     <Phone size={13} className="text-slate-400" />
                     <span>{u.phone}</span>
                   </div>
                 )}
 
                 {/* Permissions summary */}
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-[11px] text-slate-600 space-y-1 mb-4">
-                  <div className="font-semibold text-slate-700 text-[10px] uppercase tracking-wider mb-1">
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 type-detail text-slate-600 space-y-1 mb-4">
+                  <div className="font-semibold text-slate-700 type-detail uppercase tracking-wider mb-1">
                     角色職責示意（非權限限制）：
                   </div>
                   {roleDescriptions[u.role]?.responsibilities.map((p, idx) => (
@@ -153,7 +153,7 @@ export const UsersView: React.FC = () => {
               </div>
 
               {/* Action */}
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between type-detail">
                 {isCurrent ? (
                   <span className="text-emerald-700 font-semibold flex items-center gap-1">
                     <UserCheck size={14} />
@@ -162,7 +162,7 @@ export const UsersView: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => setCurrentUser(u)}
-                    className="w-full py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 rounded-lg font-semibold transition-colors cursor-pointer"
+                    className="type-label w-full py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 rounded-lg transition-colors cursor-pointer"
                   >
                     切換至此視角
                   </button>
@@ -177,29 +177,29 @@ export const UsersView: React.FC = () => {
       {isAddUserOpen && (
         <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="modal-panel bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-            <h2 className="text-lg font-bold text-slate-900 mb-1">新增門市人員檔案</h2>
-            <p className="text-xs text-slate-500 mb-4">建立目前示範資料中的人員檔案，供選擇經手人；不是登入帳號，也不授予權限。</p>
+            <h2 className="type-section-title text-slate-900 mb-1">新增門市人員檔案</h2>
+            <p className="type-detail text-slate-500 mb-4">建立目前示範資料中的人員檔案，供選擇經手人；不是登入帳號，也不授予權限。</p>
 
-            <form onSubmit={handleAddSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleAddSubmit} className="type-detail space-y-4">
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">姓名 (暱稱)</label>
+                <label className="type-label block text-slate-700 mb-1">姓名 (暱稱)</label>
                 <input
                   type="text"
                   required
                   placeholder="例：安娜 (Anna)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                  className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">示範角色</label>
+                  <label className="type-label block text-slate-700 mb-1">示範角色</label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as Role)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                    className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
                   >
                     <option value="Staff">Staff (現場設計師/技師)</option>
                     <option value="Manager">Manager (店主管/經理)</option>
@@ -207,25 +207,25 @@ export const UsersView: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">職稱</label>
+                  <label className="type-label block text-slate-700 mb-1">職稱</label>
                   <input
                     type="text"
                     placeholder="例：資深美髮師"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                    className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">聯絡手機</label>
+                <label className="type-label block text-slate-700 mb-1">聯絡手機</label>
                 <input
                   type="text"
                   placeholder="例：0988-123-456"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                  className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
                 />
               </div>
 
@@ -233,13 +233,13 @@ export const UsersView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddUserOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 cursor-pointer"
+                  className="type-label px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 cursor-pointer"
                 >
                   取消
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold shadow-xs cursor-pointer"
+                  className="type-label px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs cursor-pointer"
                 >
                   建立人員
                 </button>

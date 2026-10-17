@@ -54,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
               onCloseNavigation();
             }
           }}
-          className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 lg:hidden"
+          className="type-label flex shrink-0 items-center justify-center rounded-lg border border-slate-200 lg:hidden"
         >
           <Menu size={20} />
         </button>
@@ -65,9 +65,9 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-bold text-slate-900 tracking-tight text-base">綠境草本頭皮護理沙龍</span>
             <span className="text-slate-300 font-light">/</span>
-            <span className="text-sm font-medium text-emerald-800">{tabLabels[activeTab] || '決策支援中心'}</span>
+            <span className="type-detail font-medium text-emerald-800">{tabLabels[activeTab] || '決策支援中心'}</span>
           </div>
-          <div className="text-xs text-slate-600 hidden sm:block">
+          <div className="type-detail text-slate-600 hidden sm:block">
             <span>台北概念旗艦館</span>
             <span className="mx-1.5 text-slate-300">·</span>
             <span className="tabular-nums">{inventorySummary.totalSkus} SKUs 常備</span>
@@ -78,8 +78,8 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
       </div>
 
       {/* Zone 2: Navigation Links (Secondary / Quick Filters if needed or Breadcrumbs) */}
-      <div className="hidden lg:flex items-center gap-5 text-sm text-slate-600">
-        <span className="text-xs text-emerald-800/80 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 flex items-center gap-1.5">
+      <div className="hidden lg:flex items-center gap-5 type-detail text-slate-600">
+        <span className="type-detail text-emerald-800/80 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           課程原型：目前示範資料，未連接門市或 AI 服務
         </span>
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
         <button
           type="button"
           onClick={() => setIsServiceUsageModalOpen(true)}
-          className="flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 whitespace-nowrap bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
+          className="type-label flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 whitespace-nowrap bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-sm transition-colors cursor-pointer"
           title="沙龍做客人快速登記洗髮精/精華液耗用，即刻扣庫存"
         >
           <Plus size={15} />
@@ -103,12 +103,12 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
           type="button"
           aria-label={`站內通知與設定，未讀 ${unreadCount} 則`}
           onClick={() => setIsNotificationSettingsOpen(true)}
-          className="relative flex shrink-0 items-center justify-center p-2 text-slate-500 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-lg transition-colors cursor-pointer"
+          className="type-label relative flex shrink-0 items-center justify-center p-2 text-slate-500 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-lg transition-colors cursor-pointer"
           title={`未讀站內紀錄 ${unreadCount} 則；LINE／Email 示範，未實際發送`}
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-rose-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center tabular-nums">
+            <span className="absolute top-1 right-1 min-w-6 min-h-6 px-1 bg-rose-600 text-white type-detail font-bold rounded-full flex items-center justify-center tabular-nums">
               {unreadCount}
             </span>
           )}
@@ -136,23 +136,23 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
             aria-expanded={isRoleSelectorOpen}
             aria-controls="role-selector"
             onClick={() => setIsRoleSelectorOpen(open => !open)}
-            className="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer"
+            className="type-label flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer"
           >
-            <span className="w-8 h-8 shrink-0 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-inner">
+            <span className="w-8 h-8 shrink-0 rounded-full bg-emerald-100 text-emerald-900 font-bold type-detail flex items-center justify-center border border-emerald-200 shadow-inner">
               {currentUser.avatar}
             </span>
             <span className="text-left hidden md:block">
-              <span className="block text-xs font-bold text-slate-800 leading-tight">{currentUser.name}</span>
-              <span className="block text-[10px] text-slate-600">角色示範 · {currentUser.title.split(' ')[0]}</span>
+              <span className="block type-detail font-bold text-slate-800 leading-tight">{currentUser.name}</span>
+              <span className="block type-detail text-slate-600">角色示範 · {currentUser.title.split(' ')[0]}</span>
             </span>
           </button>
 
           {/* Quick User Role Switcher Menu */}
           <div id="role-selector" hidden={!isRoleSelectorOpen} className="absolute right-0 mt-2 w-52 max-w-[calc(100vw-2rem)] max-h-[60dvh] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-30 animate-in fade-in">
-            <div className="px-3 py-2 text-[11px] font-bold text-slate-600 border-b border-slate-100 uppercase tracking-wider">
+            <div className="px-3 py-2 type-detail font-bold text-slate-600 border-b border-slate-100 uppercase tracking-wider">
               切換示範角色（{users.length} 位）
             </div>
-            <p className="px-3 py-2 text-[11px] text-slate-500">角色切換供操作情境展示，目前未提供登入驗證與權限隔離。</p>
+            <p className="px-3 py-2 type-detail text-slate-500">角色切換供操作情境展示，目前未提供登入驗證與權限隔離。</p>
             {users.map(u => (
               <button
                 type="button"
@@ -162,13 +162,13 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
                   setIsRoleSelectorOpen(false);
                   roleButtonRef.current?.focus();
                 }}
-                className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                  currentUser.id === u.id ? 'bg-emerald-50 text-emerald-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'
-                }`}
+                className={`type-label w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors ${
+ currentUser.id === u.id ? 'bg-emerald-50 text-emerald-900 ' : 'text-slate-600 hover:bg-slate-50'
+ }`}
               >
                 <div>
                   <div className="text-slate-800">{u.name}</div>
-                  <div className="text-[10px] text-slate-600">{u.title}</div>
+                  <div className="type-detail text-slate-600">{u.title}</div>
                 </div>
                 {currentUser.id === u.id && <Check size={14} className="text-emerald-700" />}
               </button>

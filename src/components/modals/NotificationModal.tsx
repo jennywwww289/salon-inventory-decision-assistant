@@ -56,39 +56,39 @@ export const NotificationModal: React.FC = () => {
               <Bell size={16} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">庫存警示與站內通知示範</h2>
-              <p className="text-xs text-slate-500">警示隨目前資料更新；LINE／Email 示範，未實際發送。通知及已讀狀態不保存，重新整理後回到初始示例。</p>
+              <h2 className="type-section-title text-slate-900">庫存警示與站內通知示範</h2>
+              <p className="type-detail text-slate-500">警示隨目前資料更新；LINE／Email 示範，未實際發送。通知及已讀狀態不保存，重新整理後回到初始示例。</p>
             </div>
           </div>
           <button
             type="button"
             aria-label="關閉通知設定"
             onClick={() => setIsNotificationSettingsOpen(false)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
+            className="type-label p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="modal-body space-y-4 text-xs overflow-y-auto flex-1 pr-1">
+        <div className="modal-body space-y-4 type-detail overflow-y-auto flex-1 pr-1">
           {/* Status badge */}
           <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
               <div>
                 <span className="font-bold text-emerald-950 block">目前庫存警示：依共用規則計算</span>
-                <span className="text-[11px] text-emerald-800">全店 {inventorySummary.totalSkus} SKUs 依庫存、補貨點與週需求更新，非背景定時監控</span>
+                <span className="type-detail text-emerald-800">全店 {inventorySummary.totalSkus} SKUs 依庫存、補貨點與週需求更新，非背景定時監控</span>
               </div>
             </div>
-            <span className="text-[10px] font-mono font-bold bg-white text-emerald-800 px-2 py-1 rounded shadow-2xs">
+            <span className="type-number font-mono bg-white text-emerald-800 px-2 py-1 rounded shadow-2xs">
               前端示範
             </span>
           </div>
 
           {/* Channels Toggle */}
           <div className="space-y-2">
-            <p className="font-semibold text-slate-700">管道偏好示意（開關僅切換顯示，不控制發送）：</p>
-            <p className="text-[11px] text-slate-500">管道選擇暫存於本次系統展示，返回首頁或重新整理會重設；未串接外部服務或排程。</p>
+            <p className="type-body font-semibold text-slate-700">管道偏好示意（開關僅切換顯示，不控制發送）：</p>
+            <p className="type-detail text-slate-500">管道選擇暫存於本次系統展示，返回首頁或重新整理會重設；未串接外部服務或排程。</p>
             <div className="grid grid-cols-2 gap-3">
               <div 
                 onClick={() => setLineActive(!lineActive)}
@@ -100,7 +100,7 @@ export const NotificationModal: React.FC = () => {
                   <Smartphone size={16} className="text-emerald-700" />
                   <div>
                     <div className="font-bold text-slate-900">LINE 管道示意</div>
-                    <div className="text-[10px] text-slate-500">{lineActive ? '示意開啟' : '示意關閉'}，未實際發送</div>
+                    <div className="type-detail text-slate-500">{lineActive ? '示意開啟' : '示意關閉'}，未實際發送</div>
                   </div>
                 </div>
                 {lineActive && <Check size={16} className="text-emerald-700" />}
@@ -116,7 +116,7 @@ export const NotificationModal: React.FC = () => {
                   <Mail size={16} className="text-emerald-700" />
                   <div>
                     <div className="font-bold text-slate-900">Email 管道示意</div>
-                    <div className="text-[10px] text-slate-500">{emailActive ? '示意開啟' : '示意關閉'}，未實際發送</div>
+                    <div className="type-detail text-slate-500">{emailActive ? '示意開啟' : '示意關閉'}，未實際發送</div>
                   </div>
                 </div>
                 {emailActive && <Check size={16} className="text-emerald-700" />}
@@ -132,25 +132,25 @@ export const NotificationModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setTargetChannel('LINE')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-mono cursor-pointer ${
-                    targetChannel === 'LINE' ? 'bg-emerald-800 text-white font-bold' : 'bg-white text-slate-600 border'
-                  }`}
+                  className={`type-label px-2 py-0.5 rounded font-mono cursor-pointer ${
+ targetChannel === 'LINE' ? 'bg-emerald-800 text-white ' : 'bg-white text-slate-600 border'
+ }`}
                 >
                   LINE
                 </button>
                 <button
                   type="button"
                   onClick={() => setTargetChannel('Email')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-mono cursor-pointer ${
-                    targetChannel === 'Email' ? 'bg-emerald-800 text-white font-bold' : 'bg-white text-slate-600 border'
-                  }`}
+                  className={`type-label px-2 py-0.5 rounded font-mono cursor-pointer ${
+ targetChannel === 'Email' ? 'bg-emerald-800 text-white ' : 'bg-white text-slate-600 border'
+ }`}
                 >
                   Email
                 </button>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="type-detail text-slate-500 leading-relaxed">
               選用第一項危急商品，沒有危急商品時使用第一項商品。按下後只新增站內紀錄，不修改庫存、建立採購或對外寄送。
             </p>
 
@@ -158,16 +158,16 @@ export const NotificationModal: React.FC = () => {
               type="button"
               onClick={handleSendTestAlert}
               disabled={products.length === 0}
-              className="w-full py-2 bg-slate-900 hover:bg-black text-white rounded-lg font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              className="type-label w-full py-2 bg-slate-900 hover:bg-black text-white rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
               <Send size={14} />
               <span>新增 {targetChannel} 示範紀錄</span>
             </button>
-            <p role="status" aria-live="polite" className="min-h-4 text-[11px] text-slate-600">{testMessage}</p>
+            <p role="status" aria-live="polite" className="type-body min-h-4 text-slate-600">{testMessage}</p>
           </div>
 
           <div className="space-y-2 pt-2 border-t border-slate-100">
-            <h3 className="font-semibold text-slate-800">目前庫存警示：{inventoryAlerts.length} 項（危急／低水位）</h3>
+            <h3 className="type-item-title text-slate-800">目前庫存警示：{inventoryAlerts.length} 項（危急／低水位）</h3>
             {inventoryAlerts.length === 0 ? <p>目前沒有危急或低水位商品。</p> : (
               <ul className="space-y-1">
                 {inventoryAlerts.slice(0, 5).map(p => <li key={p.id}>{p.name}：現有 {p.stock}，補貨點 {p.reorderPoint}（{p.status === 'Critical' ? '危急' : '低水位'}）</li>)}
@@ -183,13 +183,13 @@ export const NotificationModal: React.FC = () => {
               <button
                 type="button"
                 onClick={markAllNotificationsRead}
-                className="text-[11px] text-emerald-800 hover:underline cursor-pointer"
+                className="type-label text-emerald-800 hover:underline cursor-pointer"
               >
                 全部標記為已讀
               </button>
             </div>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto font-mono text-[11px]">
+            <div className="space-y-2 max-h-48 overflow-y-auto font-mono type-detail">
               {notifications.map(n => (
                 <div
                   key={n.id}
@@ -199,10 +199,10 @@ export const NotificationModal: React.FC = () => {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-slate-900 font-sans">{n.title}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{n.timestamp}</span>
+                    <span className="type-detail text-slate-400 font-mono">{n.timestamp}</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-sans">{n.channel === 'System' ? '站內紀錄' : `${n.channel} 示範，未實際發送`}{n.isRead ? ' · 已讀' : ' · 未讀'}</p>
-                  <p className="text-[11px] text-slate-600 font-sans leading-relaxed">{n.message}</p>
+                  <p className="type-detail text-slate-500 font-sans">{n.channel === 'System' ? '站內紀錄' : `${n.channel} 示範，未實際發送`}{n.isRead ? ' · 已讀' : ' · 未讀'}</p>
+                  <p className="type-detail text-slate-600 font-sans leading-relaxed">{n.message}</p>
                 </div>
               ))}
             </div>
@@ -212,7 +212,7 @@ export const NotificationModal: React.FC = () => {
         <div className="pt-3 border-t border-slate-100 flex justify-end">
           <button
             onClick={() => setIsNotificationSettingsOpen(false)}
-            className="px-5 py-2 bg-emerald-800 text-white rounded-lg font-semibold shadow-xs cursor-pointer"
+            className="type-label px-5 py-2 bg-emerald-800 text-white rounded-lg shadow-xs cursor-pointer"
           >
             完成並關閉
           </button>

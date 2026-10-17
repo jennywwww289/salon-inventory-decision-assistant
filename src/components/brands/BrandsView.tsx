@@ -85,14 +85,14 @@ export const BrandsView: React.FC = () => {
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">品牌營運績效與比較</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="type-page-title text-slate-900 tracking-tight">品牌營運績效與比較</h1>
+          <p className="type-detail text-slate-500 mt-1">
             SKU、庫存成本與狀態依目前示範資料更新；成長率為固定示意，月需求金額與週轉為公式試算，非實際營收。
           </p>
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="type-label px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Plus size={16} />
           <span>新增合作品牌</span>
@@ -110,22 +110,22 @@ export const BrandsView: React.FC = () => {
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="type-detail font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
                     {stat.brand.origin} · {stat.skuCount} SKUs
                   </span>
-                  <div className={`flex items-center text-xs font-bold font-mono ${
-                    isTrendPositive ? 'text-emerald-700' : 'text-rose-600'
-                  }`}>
+                  <div className={`type-number flex items-center font-mono ${
+ isTrendPositive ? 'text-emerald-700' : 'text-rose-600'
+ }`}>
                     {isTrendPositive ? <TrendingUp size={14} className="mr-0.5" /> : <TrendingDown size={14} className="mr-0.5" />}
                     <span>成長示意 {isTrendPositive ? '+' : ''}{Math.round(stat.trend * 100)}%</span>
                   </div>
                 </div>
 
-                <h3 className="font-bold text-base text-slate-900 mb-1">{stat.brand.name}</h3>
-                <p className="text-[11px] text-slate-600 line-clamp-2 mb-4">{stat.brand.description}</p>
+                <h3 className="type-item-title text-slate-900 mb-1">{stat.brand.name}</h3>
+                <p className="type-detail text-slate-600 break-words whitespace-normal mb-4">{stat.brand.description}</p>
 
                 {/* Metrics Breakdown */}
-                <div className="space-y-2 bg-slate-50/80 p-3 rounded-xl text-xs font-mono mb-4 border border-slate-100">
+                <div className="space-y-2 bg-slate-50/80 p-3 rounded-xl type-detail font-mono mb-4 border border-slate-100">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-600 font-sans">月需求金額試算：</span>
                     <span className="font-bold text-slate-900">
@@ -148,8 +148,8 @@ export const BrandsView: React.FC = () => {
               </div>
 
               {/* Status and Risk Indicators */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 font-mono text-[11px]">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between type-detail">
+                <div className="flex items-center gap-1.5 font-mono type-detail">
                   {stat.criticalCount > 0 ? (
                     <span className="text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded font-bold">
                       {stat.criticalCount} 斷貨
@@ -161,7 +161,7 @@ export const BrandsView: React.FC = () => {
                     </span>
                   ) : null}
                   {stat.criticalCount === 0 && stat.overstockCount === 0 ? (
-                    <span className="text-emerald-700 font-sans text-[11px]">
+                    <span className="text-emerald-700 font-sans type-detail">
                       庫存健康
                     </span>
                   ) : null}
@@ -169,7 +169,7 @@ export const BrandsView: React.FC = () => {
 
                 <button
                   onClick={() => setActiveTab('inventory')}
-                  className="text-emerald-800 font-semibold text-xs hover:underline flex items-center gap-0.5 cursor-pointer"
+                  className="type-label text-emerald-800 hover:underline flex items-center gap-0.5 cursor-pointer"
                 >
                   <span>看品項</span>
                   <ArrowRight size={13} />
@@ -183,22 +183,22 @@ export const BrandsView: React.FC = () => {
       {/* 3. Comparative Evaluation Table */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
         <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="text-sm font-bold text-slate-900">品牌資料與試算對照</h2>
-          <p className="text-xs text-slate-500">月需求金額＝Σ（週需求×售價）×4.3；年週轉＝Σ（週需求×成本）×52÷目前庫存成本（分母為 0 時顯示 0.0）。成長率是固定示例。</p>
+          <h2 className="type-section-title text-slate-900">品牌資料與試算對照</h2>
+          <p className="type-detail text-slate-500">月需求金額＝Σ（週需求×售價）×4.3；年週轉＝Σ（週需求×成本）×52÷目前庫存成本（分母為 0 時顯示 0.0）。成長率是固定示例。</p>
         </div>
 
         <div tabIndex={0} role="region" aria-label="品牌資料表，可左右捲動" className="table-scroll">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 text-[11px]">
+          <table className="type-detail w-full text-left font-mono">
+            <thead className="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 type-detail">
               <tr>
-                <th className="py-3 px-4 font-sans">品牌名稱</th>
-                <th className="py-3 px-4 text-center">SKU 數</th>
-                <th className="py-3 px-4 text-right">庫存成本金額</th>
-                <th className="py-3 px-4 text-right">月需求金額試算</th>
-                <th className="py-3 px-4 text-center">成長率示意（固定）</th>
-                <th className="py-3 px-4 text-center">年週轉試算</th>
-                <th className="py-3 px-4 text-center">斷貨品項</th>
-                <th className="py-3 px-4 text-center">積壓品項</th>
+                <th className="type-label py-3 px-4 font-sans">品牌名稱</th>
+                <th className="type-label py-3 px-4 text-center">SKU 數</th>
+                <th className="type-label py-3 px-4 text-right">庫存成本金額</th>
+                <th className="type-label py-3 px-4 text-right">月需求金額試算</th>
+                <th className="type-label py-3 px-4 text-center">成長率示意（固定）</th>
+                <th className="type-label py-3 px-4 text-center">年週轉試算</th>
+                <th className="type-label py-3 px-4 text-center">斷貨品項</th>
+                <th className="type-label py-3 px-4 text-center">積壓品項</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-sans">
@@ -208,10 +208,10 @@ export const BrandsView: React.FC = () => {
                     {stat.brand.name}
                   </td>
                   <td className="py-3 px-4 text-center font-mono">{stat.skuCount}</td>
-                  <td className="py-3 px-4 text-right font-mono font-bold text-slate-800">
+                  <td className="type-number py-3 px-4 text-right font-mono text-slate-800">
                     NT$ {stat.totalInventoryValue.toLocaleString()}
                   </td>
-                  <td className="py-3 px-4 text-right font-mono text-emerald-800 font-bold">
+                  <td className="type-number py-3 px-4 text-right font-mono text-emerald-800">
                     NT$ {Math.round(stat.estimatedMonthlyRevenue).toLocaleString()}
                   </td>
                   <td className="py-3 px-4 text-center font-mono">
@@ -243,51 +243,51 @@ export const BrandsView: React.FC = () => {
       {isAddModalOpen && (
         <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="modal-panel bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-            <h2 className="text-lg font-bold text-slate-900 mb-1">新增合作品牌</h2>
-            <p className="text-xs text-slate-500 mb-4">建立新的進貨品牌檔案，建立後即可關聯商品與供應商。</p>
+            <h2 className="type-section-title text-slate-900 mb-1">新增合作品牌</h2>
+            <p className="type-detail text-slate-500 mb-4">建立新的進貨品牌檔案，建立後即可關聯商品與供應商。</p>
 
-            <form onSubmit={handleAddBrandSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleAddBrandSubmit} className="type-detail space-y-4">
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">品牌名稱</label>
+                <label className="type-label block text-slate-700 mb-1">品牌名稱</label>
                 <input
                   type="text"
                   required
                   placeholder="例：AVEDA 肯夢"
                   value={newBrandName}
                   onChange={(e) => setNewBrandName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-1 focus:ring-emerald-700 focus:bg-white"
+                  className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-1 focus:ring-emerald-700 focus:bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">產地 / 來源國</label>
+                  <label className="type-label block text-slate-700 mb-1">產地 / 來源國</label>
                   <input
                     type="text"
                     value={newBrandOrigin}
                     onChange={(e) => setNewBrandOrigin(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                    className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">主要品類</label>
+                  <label className="type-label block text-slate-700 mb-1">主要品類</label>
                   <input
                     type="text"
                     value={newBrandCategory}
                     onChange={(e) => setNewBrandCategory(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                    className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">品牌簡介 / 定位</label>
+                <label className="type-label block text-slate-700 mb-1">品牌簡介 / 定位</label>
                 <textarea
                   rows={2}
                   placeholder="例：純淨植萃草本精油養護..."
                   value={newBrandDesc}
                   onChange={(e) => setNewBrandDesc(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                  className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
                 />
               </div>
 
@@ -295,13 +295,13 @@ export const BrandsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 cursor-pointer"
+                  className="type-label px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 cursor-pointer"
                 >
                   取消
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold shadow-xs cursor-pointer"
+                  className="type-label px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs cursor-pointer"
                 >
                   建立品牌
                 </button>

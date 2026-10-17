@@ -66,60 +66,60 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
               <Package size={16} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">建立新商品品項 (New SKU)</h2>
-              <p className="text-xs text-slate-500">登記沙龍專業使用或零售之全新商品基本資料。</p>
+              <h2 className="type-section-title text-slate-900">建立新商品品項 (New SKU)</h2>
+              <p className="type-detail text-slate-500">登記沙龍專業使用或零售之全新商品基本資料。</p>
             </div>
           </div>
-          <button type="button" aria-label="關閉新增商品表單" onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+          <button type="button" aria-label="關閉新增商品表單" onClick={onClose} className="type-label p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
-          {error && <p role="alert" className="text-rose-700">{error}</p>}
+        <form onSubmit={handleSubmit} className="type-detail space-y-4 overflow-y-auto flex-1 pr-1">
+          {error && <p role="alert" className="type-body text-rose-700">{error}</p>}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">商品名稱</label>
+              <label className="type-label block text-slate-700 mb-1">商品名稱</label>
               <input
                 type="text"
                 required
                 placeholder="例：植萃草本控油調理精華"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
               />
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">SKU 編號</label>
+              <label className="type-label block text-slate-700 mb-1">SKU 編號</label>
               <input
                 type="text"
                 required
                 placeholder="例：HERB-001"
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono uppercase"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono uppercase"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">容量規格</label>
+              <label className="type-label block text-slate-700 mb-1">容量規格</label>
               <input
                 type="text"
                 placeholder="例：250ml / 1000ml"
                 value={spec}
                 onChange={(e) => setSpec(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
               />
             </div>
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">品牌</label>
+              <label className="type-label block text-slate-700 mb-1">品牌</label>
               <select
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
               >
                 {brands.map(b => (
                   <option key={b.id} value={b.id}>{b.name}</option>
@@ -127,11 +127,11 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
               </select>
             </div>
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">品類</label>
+              <label className="type-label block text-slate-700 mb-1">品類</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
               >
                 <option value="洗髮淨化">洗髮淨化</option>
                 <option value="頭皮理療">頭皮理療</option>
@@ -145,11 +145,11 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">對應供應商</label>
+              <label className="type-label block text-slate-700 mb-1">對應供應商</label>
               <select
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
               >
                 {suppliers.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -158,73 +158,73 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">初始在手庫存 (瓶)</label>
+              <label className="type-label block text-slate-700 mb-1">初始在手庫存 (瓶)</label>
               <input
                 type="number"
                 min="0"
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">進貨成本 (NT$)</label>
+              <label className="type-label block text-slate-700 mb-1">進貨成本 (NT$)</label>
               <input
                 type="number"
                 min="0"
                 value={unitCost}
                 step="any"
                 onChange={(e) => setUnitCost(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">門市售價 (NT$)</label>
+              <label className="type-label block text-slate-700 mb-1">門市售價 (NT$)</label>
               <input
                 type="number"
                 min="0"
                 value={sellingPrice}
                 step="any"
                 onChange={(e) => setSellingPrice(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">安全補貨點</label>
+              <label className="type-label block text-slate-700 mb-1">安全補貨點</label>
               <input
                 type="number"
                 min="0"
                 value={reorderPoint}
                 onChange={(e) => setReorderPoint(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">起訂量 (MOQ)</label>
+              <label className="type-label block text-slate-700 mb-1">起訂量 (MOQ)</label>
               <input
                 type="number"
                 min="1"
                 value={moq}
                 onChange={(e) => setMoq(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">預估每週需求</label>
+              <label className="type-label block text-slate-700 mb-1">預估每週需求</label>
               <input
                 type="number"
                 min="0"
                 step="any"
                 value={weeklyDemand}
                 onChange={(e) => setWeeklyDemand(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
           </div>
@@ -233,13 +233,13 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 cursor-pointer"
+              className="type-label px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 cursor-pointer"
             >
               取消
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold shadow-xs transition-colors cursor-pointer"
+              className="type-label px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs transition-colors cursor-pointer"
             >
               建立商品
             </button>

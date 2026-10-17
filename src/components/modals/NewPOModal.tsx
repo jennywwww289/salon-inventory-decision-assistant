@@ -108,19 +108,19 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
       <div className="modal-panel bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">建立採購訂單草稿 (New Purchase Order)</h2>
-            <p className="text-xs text-slate-500">建立目前示範資料中的採購草稿，不會對外送單；核准須依狀態流程，但目前不依角色限制。</p>
+            <h2 className="type-section-title text-slate-900">建立採購訂單草稿 (New Purchase Order)</h2>
+            <p className="type-detail text-slate-500">建立目前示範資料中的採購草稿，不會對外送單；核准須依狀態流程，但目前不依角色限制。</p>
           </div>
-          <button type="button" aria-label="關閉採購表單" onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+          <button type="button" aria-label="關閉採購表單" onClick={onClose} className="type-label p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
             <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
-          {error && <p role="alert" className="text-rose-700">{error}</p>}
+        <form onSubmit={handleSubmit} className="type-detail space-y-4 overflow-y-auto flex-1 pr-1">
+          {error && <p role="alert" className="type-body text-rose-700">{error}</p>}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">選擇供應商</label>
+              <label className="type-label block text-slate-700 mb-1">選擇供應商</label>
               <select
                 value={selectedSupplierId}
                 onChange={(e) => {
@@ -128,7 +128,7 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                   const validation = validatePurchaseInput(buildInput(e.target.value), products, suppliers);
                   setError(validation.ok === false ? formatValidationErrors(validation.errors) : '');
                 }}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-medium"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-medium"
               >
                 {suppliers.map(s => (
                   <option key={s.id} value={s.id}>{s.name} (MOQ: {s.moq} / 交期: {s.defaultLeadTime}天)</option>
@@ -137,13 +137,13 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
             </div>
 
             <div>
-              <label className="block text-slate-700 font-semibold mb-1">預期到貨日</label>
+              <label className="type-label block text-slate-700 mb-1">預期到貨日</label>
               <input
                 type="date"
                 required
                 value={expectedDate}
                 onChange={(e) => setExpectedDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
+                className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
           </div>
@@ -151,11 +151,11 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
           {/* Items Table */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-slate-700 font-semibold">採購品項明細</label>
+              <label className="type-label text-slate-700">採購品項明細</label>
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="text-xs text-emerald-800 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                className="type-label text-emerald-800 hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Plus size={14} />
                 <span>+ 增加品項</span>
@@ -176,7 +176,7 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                         <select
                           value={item.productId}
                           onChange={(e) => handleItemChange(idx, 'productId', e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs"
+                          className="type-detail w-full bg-white border border-slate-200 rounded-lg p-2"
                         >
                           {!availableProducts.some(prod => prod.id === item.productId) && (
                             <option value={item.productId} disabled>{p?.name ?? item.productId}（不符目前供應商，請更換或移除）</option>
@@ -195,19 +195,19 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-lg p-2 text-center font-mono font-bold"
+                          className="type-detail w-full bg-white border border-slate-200 rounded-lg p-2 text-center font-mono font-bold"
                           placeholder="數量"
                         />
                       </div>
 
-                      <div className="w-24 text-right font-mono font-bold text-slate-800 text-xs">
+                      <div className="type-number w-24 text-right font-mono text-slate-800">
                         NT$ {p && Number.isFinite(parseNumericInput(item.quantity)) ? (p.unitCost * parseNumericInput(item.quantity)).toLocaleString() : '—'}
                       </div>
 
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(idx)}
-                        className="p-2 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
+                        className="type-label p-2 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -220,7 +220,7 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
 
           {/* MOQ Alert if not met */}
           {!isMoqMet && currentSupplier && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-amber-800 text-xs">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-amber-800 type-detail">
               <AlertCircle size={16} className="shrink-0" />
               <span>
                 注意：目前訂購總件數 ({totalUnits}) 未達該供應商最小起訂量 ({currentSupplier.moq} 件)。建議調整數量以符合訂貨標準。
@@ -229,24 +229,24 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
           )}
 
           <div>
-            <label className="block text-slate-700 font-semibold mb-1">訂單備註 (選填)</label>
+            <label className="type-label block text-slate-700 mb-1">訂單備註 (選填)</label>
             <input
               type="text"
               placeholder="例：秋季例行補貨，請於週五前送達"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
+              className="type-detail w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5"
             />
           </div>
 
           {/* Summary */}
-          <div className="p-3 bg-slate-100 rounded-xl flex flex-wrap gap-2 justify-between items-center text-xs">
+          <div className="p-3 bg-slate-100 rounded-xl flex flex-wrap gap-2 justify-between items-center type-detail">
             <span className="text-slate-600">
               合計品項：<strong>{items.length}</strong> 項 · 總件數：<strong>{totalUnits}</strong> 瓶
             </span>
             <div className="text-right">
-              <span className="text-slate-400 block text-[11px]">預估總金額</span>
-              <span className="text-base font-black text-slate-900 font-mono">
+              <span className="text-slate-400 block type-detail">預估總金額</span>
+              <span className="type-number text-slate-900 font-mono">
                 NT$ {totalCost.toLocaleString()}
               </span>
             </div>
@@ -256,13 +256,13 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 cursor-pointer"
+              className="type-label px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 cursor-pointer"
             >
               取消
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold shadow-xs transition-colors cursor-pointer"
+              className="type-label px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs transition-colors cursor-pointer"
             >
               建立採購單草稿
             </button>

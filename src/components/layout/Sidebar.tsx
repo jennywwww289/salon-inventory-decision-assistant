@@ -99,17 +99,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       className={`${isOpen ? 'flex' : 'hidden'} w-full max-h-[65dvh] overflow-y-auto bg-slate-50/80 border-b border-emerald-950/10 flex-col justify-between shrink-0 lg:flex lg:w-64 lg:max-h-none lg:border-b-0 lg:border-r lg:min-h-[calc(100vh-4rem)]`}
     >
       <div className="flex justify-end px-4 pt-3 lg:hidden">
-        <button type="button" onClick={onClose} className="px-3 rounded-lg border border-slate-200 text-xs">
+        <button type="button" onClick={onClose} className="type-label px-3 rounded-lg border border-slate-200">
           關閉導覽
         </button>
       </div>
       <div className="p-4 space-y-6">
         {/* Core Decision Framework Banner */}
         <div className="p-3 bg-white rounded-xl border border-emerald-900/10 shadow-xs">
-          <div className="text-[11px] font-bold text-emerald-900 tracking-wider mb-1">
+          <div className="type-detail font-bold text-emerald-900 tracking-wider mb-1">
             決策導引工作流
           </div>
-          <div className="flex items-center text-[11px] text-slate-500 font-medium">
+          <div className="flex items-center type-detail text-slate-500 font-medium">
             <span>數據</span>
             <span className="mx-1 text-emerald-600">→</span>
             <span>洞察</span>
@@ -121,13 +121,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navigation list */}
-        <nav aria-label="系統分頁" className="space-y-1">
+        <nav aria-label="系統分頁" className="type-detail space-y-1">
           {navItems.map((item, idx) => {
             if (item.type === 'divider') {
               return (
                 <div key={`div-${idx}`} className="pt-3 pb-2 px-3">
                   <div className="h-px bg-slate-200" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-2 block">
+                  <span className="type-detail font-bold text-slate-400 uppercase tracking-widest pt-2 block">
                     營運基礎管理
                   </span>
                 </div>
@@ -143,11 +143,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 key={item.id}
                 onClick={() => { setActiveTab(item.id!); onClose(); }}
                 aria-current={isActive ? 'page' : undefined}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  isActive
-                    ? 'bg-emerald-800 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-emerald-950/5'
-                }`}
+                className={`type-label w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg transition-colors cursor-pointer ${
+ isActive
+ ? 'bg-emerald-800 text-white shadow-xs'
+ : 'text-slate-600 hover:text-slate-900 hover:bg-emerald-950/5'
+ }`}
               >
                 <div className="flex items-center gap-2.5">
                   <Icon size={17} className={isActive ? 'text-white' : 'text-slate-400'} />
@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 </div>
                 {item.badge && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded ${
+                    className={`type-detail px-1.5 py-0.5 rounded ${
                       isActive ? 'bg-emerald-950/40 text-emerald-100' : item.badgeColor
                     }`}
                   >
@@ -169,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-emerald-950/10 text-xs text-slate-500 space-y-1.5 bg-white/40">
+      <div className="p-4 border-t border-emerald-950/10 type-detail text-slate-500 space-y-1.5 bg-white/40">
         <div className="flex items-center justify-between">
           <span className="text-slate-400">目前庫存健康率</span>
           <span className="font-semibold text-emerald-700 tabular-nums">
@@ -184,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             }}
           />
         </div>
-        <div className="text-[11px] text-slate-400 pt-1">
+        <div className="type-detail text-slate-400 pt-1">
           <span>沙龍庫存小幫手</span>
           <span className="mx-1">·</span>
           <span>v2.4 沙龍決策版</span>
