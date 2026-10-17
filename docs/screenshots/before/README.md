@@ -5,7 +5,7 @@
 ## 程式與資料基準
 
 - 真正專案根目錄：`C:\Users\yanmo\OneDrive\桌面\創業課-倉儲管理\salon-inventory-decision-assistant-main\salon-inventory-decision-assistant-main`
-- 美化前程式標籤：`pre-beautification-v1`；對應完整雜湊以 `git rev-parse pre-beautification-v1^{commit}` 查詢，建立後另在 development-log.md 補記。標籤固定，不移動。
+- 美化前程式標籤：`pre-beautification-v1` → `0a4d62020a8a33ce0337d2a790c73b80103d9411`；可用 `git rev-parse pre-beautification-v1^{commit}` 查詢。標籤固定，不移動；後續圖片／文件提交不改變此程式版本。
 - 原始起點：`original-baseline` → `2ad1f4dc9c22e56d242a030079a650a2a2a0c154`，保留原歷史。
 - 網址固定：`http://localhost:3000/`。不要改用 127.0.0.1、其他 port 或部署網址混拍。
 - 資料來源：此標籤內 `mockData.ts` 經正式 `createDemoData()` 初始化的新副本，無既有 LocalStorage 快照；不是步驟十七的測試商品或目前一般視窗資料。
