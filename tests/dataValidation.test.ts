@@ -1674,7 +1674,7 @@ test('Step17 flow: five production component/Context flows with isolated storage
     for (const anchor of anchors) assert.equal(elements(homeTree).filter(n => n.props?.id === anchor.props.href.slice(1)).length, 1);
     elements(homeTree).find(n => n.type === 'button' && text(n) === '進入庫存系統')!.props.onClick();
     assert.ok(!homeEntry());
-    const sidebar = component('src/components/layout/Sidebar.tsx', 'Sidebar', ctx);
+    const sidebar = component('src/components/layout/Sidebar.tsx', 'Sidebar', ctx, { isOpen: false, onClose() {} });
     sidebar.find(n => n.type === 'button' && text(n).includes('商品品項清單')).props.onClick();
     assert.ok(elements(render()).some(n => n.type === 'ProductsView'));
     const before = JSON.stringify(core(ctx.read()));
@@ -1827,4 +1827,87 @@ test('Step17 flow: five production component/Context flows with isolated storage
   });
 
   process.stdout.write(`# Step17 mock report ${JSON.stringify({ sku, productId, poNumber, poId, baseline: baselineSummary, checkpoints, scope: 'isolated hook/handler/storage mocks; no browser or real user data' })}\n`);
+});
+
+test('Layout navigation: production App and Sidebar handlers close on selection and Escape without resetting core data', () => {
+  const ctx = context();
+  const before = JSON.stringify(core(ctx.read()));
+  const app = runtime('src/App.tsx', {
+    './context/AppContext': { AppProvider: 'ProviderBoundary', useApp: ctx.read },
+    './components/home/PersonalHome': { PersonalHome: 'HomeBoundary' },
+    './components/layout/Header': { Header: 'HeaderBoundary' },
+    './components/layout/Sidebar': { Sidebar: 'SidebarBoundary' },
+  });
+  const root = app.render('default');
+  assert.equal(root.type, 'ProviderBoundary');
+  const render = () => app.render(root.props.children.type);
+  const find = (type: string) => elements(render()).find(node => node.type === type)!;
+  find('HomeBoundary').props.onEnterSystem();
+  assert.equal(find('HeaderBoundary').props.isNavigationOpen, false);
+  let focused = 0;
+  find('HeaderBoundary').props.navigationButtonRef.current = { focus() { focused++; } };
+  find('HeaderBoundary').props.onToggleNavigation();
+  assert.equal(find('HeaderBoundary').props.isNavigationOpen, true);
+  const sidebar = runtime('src/components/layout/Sidebar.tsx', { '../../context/AppContext': { useApp: ctx.read } });
+  const sidebarTree = () => sidebar.render('Sidebar', find('SidebarBoundary').props);
+  elements(sidebarTree()).find(node => node.type === 'button' && text(node).includes('商品品項清單'))!.props.onClick();
+  assert.equal(ctx.read().activeTab, 'products');
+  assert.equal(find('HeaderBoundary').props.isNavigationOpen, false);
+  assert.equal(focused, 1);
+  find('HeaderBoundary').props.onToggleNavigation();
+  let prevented = 0;
+  sidebarTree().props.onKeyDown({ key: 'Escape', preventDefault() { prevented++; } });
+  assert.equal(prevented, 1);
+  assert.equal(find('HeaderBoundary').props.isNavigationOpen, false);
+  assert.equal(focused, 2);
+  elements(render()).find(node => node.type === 'button' && text(node) === '返回個人首頁')!.props.onClick();
+  assert.ok(find('HomeBoundary'));
+  find('HomeBoundary').props.onEnterSystem();
+  assert.equal(ctx.read().activeTab, 'products');
+  assert.equal(find('HeaderBoundary').props.isNavigationOpen, false);
+  assert.equal(JSON.stringify(core(ctx.read())), before);
+});
+
+test('Layout header: native navigation and role controls handle clicks, Escape and focus leaving the disclosure', () => {
+  const ctx = context(fixtures => fixtures.INITIAL_USERS.push({
+    ...fixtures.INITIAL_USERS[0], id: 'u2', name: '另一角色',
+  }));
+  let toggles = 0;
+  let closes = 0;
+  const props = {
+    isNavigationOpen: false, onToggleNavigation() { toggles++; },
+    onCloseNavigation() { closes++; }, navigationButtonRef: { current: null },
+  };
+  const ui = component('src/components/layout/Header.tsx', 'Header', ctx, props);
+  const navigation = () => ui.find(node => node.type === 'button' && node.props['aria-controls'] === 'system-navigation');
+  navigation().props.onClick();
+  assert.equal(toggles, 1);
+  props.isNavigationOpen = true;
+  assert.equal(navigation().props['aria-expanded'], true);
+  navigation().props.onKeyDown(eventForEscape());
+  assert.equal(closes, 1);
+  const role = () => ui.find(node => node.type === 'button' && node.props['aria-controls'] === 'role-selector');
+  const panel = () => ui.find(node => node.props?.id === 'role-selector');
+  assert.equal(panel().props.hidden, true);
+  let focused = 0;
+  role().props.ref.current = { focus() { focused++; } };
+  role().props.onClick();
+  assert.equal(role().props['aria-expanded'], true);
+  assert.equal(panel().props.hidden, false);
+  const disclosure = () => ui.find(node => node.props?.onBlur && node.props?.onKeyDown);
+  disclosure().props.onKeyDown(eventForEscape());
+  assert.equal(panel().props.hidden, true);
+  assert.equal(focused, 1);
+  role().props.onClick();
+  ui.find(node => node.type === 'button' && text(node).includes('另一角色')).props.onClick();
+  assert.equal(ctx.read().currentUser.id, 'u2');
+  assert.equal(panel().props.hidden, true);
+  assert.equal(focused, 2);
+  role().props.onClick();
+  disclosure().props.onBlur({ currentTarget: { contains: () => false }, relatedTarget: null });
+  assert.equal(panel().props.hidden, true);
+
+  function eventForEscape() {
+    return { key: 'Escape', preventDefault() {} };
+  }
 });

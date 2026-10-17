@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { PersonalHome } from './components/home/PersonalHome';
 import { Header } from './components/layout/Header';
@@ -19,27 +19,39 @@ import { DataStorageStatus } from './components/layout/DataStorageStatus';
 const AppContent: React.FC = () => {
   const { activeTab, dataRevision } = useApp();
   const [area, setArea] = useState<'home' | 'system'>('home');
+  const [isNavigationOpen, setIsNavigationOpen] = useState(false);
+  const navigationButtonRef = useRef<HTMLButtonElement>(null);
+
+  const closeNavigation = () => {
+    setIsNavigationOpen(false);
+    if (isNavigationOpen) navigationButtonRef.current?.focus();
+  };
 
   if (area === 'home') {
     return <><DataStorageStatus /><PersonalHome onEnterSystem={() => setArea('system')} /></>;
   }
 
   return (
-    <div key={dataRevision} className="min-h-screen bg-slate-50/60 text-slate-800 flex flex-col font-sans">
-      <nav aria-label="首頁與系統切換" className="border-b border-slate-200 bg-white px-6 py-3">
+    <div key={dataRevision} className="system-shell min-h-screen min-w-0 bg-slate-50/60 text-slate-800 flex flex-col font-sans">
+      <nav aria-label="首頁與系統切換" className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
         <button
           type="button"
-          onClick={() => setArea('home')}
+          onClick={() => { setIsNavigationOpen(false); setArea('home'); }}
           className="min-h-11 rounded-lg border border-emerald-800 px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800 cursor-pointer"
         >
           返回個人首頁
         </button>
       </nav>
       <DataStorageStatus showReset />
-      <Header />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+      <Header
+        isNavigationOpen={isNavigationOpen}
+        onToggleNavigation={() => setIsNavigationOpen(open => !open)}
+        onCloseNavigation={closeNavigation}
+        navigationButtonRef={navigationButtonRef}
+      />
+      <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
+        <Sidebar isOpen={isNavigationOpen} onClose={closeNavigation} />
+        <main className="system-content min-w-0 w-full flex-1 p-4 sm:p-6 lg:p-8">
           {activeTab === 'dashboard' && <DashboardView />}
           {activeTab === 'inventory' && <InventoryView />}
           {activeTab === 'products' && <ProductsView />}

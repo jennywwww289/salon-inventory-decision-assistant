@@ -104,14 +104,14 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+    <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="modal-panel bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">建立採購訂單草稿 (New Purchase Order)</h2>
             <p className="text-xs text-slate-500">建立目前示範資料中的採購草稿，不會對外送單；核准須依狀態流程，但目前不依角色限制。</p>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
+          <button type="button" aria-label="關閉採購表單" onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
             <X size={20} />
           </button>
         </div>
@@ -171,8 +171,8 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                 {items.map((item, idx) => {
                   const p = products.find(prod => prod.id === item.productId);
                   return (
-                    <div key={idx} className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-                      <div className="flex-1">
+                    <div key={idx} className="flex flex-wrap items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                      <div className="min-w-0 basis-full sm:basis-0 sm:flex-1">
                         <select
                           value={item.productId}
                           onChange={(e) => handleItemChange(idx, 'productId', e.target.value)}
@@ -240,7 +240,7 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
           </div>
 
           {/* Summary */}
-          <div className="p-3 bg-slate-100 rounded-xl flex justify-between items-center text-xs">
+          <div className="p-3 bg-slate-100 rounded-xl flex flex-wrap gap-2 justify-between items-center text-xs">
             <span className="text-slate-600">
               合計品項：<strong>{items.length}</strong> 項 · 總件數：<strong>{totalUnits}</strong> 瓶
             </span>

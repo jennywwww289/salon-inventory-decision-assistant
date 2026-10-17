@@ -48,8 +48,8 @@ export const NotificationModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+    <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="modal-panel bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold">
@@ -61,6 +61,8 @@ export const NotificationModal: React.FC = () => {
             </div>
           </div>
           <button
+            type="button"
+            aria-label="關閉通知設定"
             onClick={() => setIsNotificationSettingsOpen(false)}
             className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
           >
@@ -68,7 +70,7 @@ export const NotificationModal: React.FC = () => {
           </button>
         </div>
 
-        <div className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
+        <div className="modal-body space-y-4 text-xs overflow-y-auto flex-1 pr-1">
           {/* Status badge */}
           <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
             <div className="flex items-center gap-2.5">

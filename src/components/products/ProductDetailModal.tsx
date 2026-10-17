@@ -119,8 +119,8 @@ export const ProductDetailModal: React.FC<Props> = ({ product: selectedProduct, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="modal-panel bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/50">
           <div>
@@ -135,6 +135,8 @@ export const ProductDetailModal: React.FC<Props> = ({ product: selectedProduct, 
             <p className="text-xs text-slate-500 mt-0.5">規格：{product.spec} · 供應商：{product.supplierName}</p>
           </div>
           <button
+            type="button"
+            aria-label="關閉商品明細"
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 rounded-lg transition-colors cursor-pointer"
           >
@@ -221,7 +223,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product: selectedProduct, 
 
         {error && <p role="alert" className="px-5 py-2 text-sm text-rose-700">{error}</p>}
         {/* Tab Content */}
-        <div className="p-5 overflow-y-auto flex-1">
+        <div className="modal-body p-5 overflow-y-auto flex-1">
           {/* TAB 1: LEDGER */}
           {activeTab === 'ledger' && (
             <div className="space-y-4">
@@ -241,7 +243,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product: selectedProduct, 
                   此商品尚未有獨立異動記錄。您可於上方登記首次領料或入庫。
                 </div>
               ) : (
-                <div className="border border-slate-200 rounded-xl overflow-hidden font-mono text-xs">
+                <div tabIndex={0} role="region" aria-label="商品交易帳本，可左右捲動" className="table-scroll border border-slate-200 rounded-xl font-mono text-xs">
                   <table className="w-full text-left">
                     <thead className="bg-slate-50 text-slate-500 text-[11px] uppercase border-b border-slate-200">
                       <tr>
@@ -483,7 +485,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product: selectedProduct, 
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <div className="modal-actions p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
           <div className="text-xs text-slate-400">
             供應商交期：{product.leadTime} 天 · MOQ：{product.moq} 瓶
           </div>

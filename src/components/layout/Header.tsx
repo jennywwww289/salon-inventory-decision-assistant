@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Bell, Sparkles, Plus, Store, Check, UserCheck } from 'lucide-react';
+import { Bell, Sparkles, Plus, Store, Check, UserCheck, Menu } from 'lucide-react';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  isNavigationOpen: boolean;
+  onToggleNavigation: () => void;
+  onCloseNavigation: () => void;
+  navigationButtonRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNavigation, onCloseNavigation, navigationButtonRef }) => {
+  const [isRoleSelectorOpen, setIsRoleSelectorOpen] = useState(false);
+  const roleButtonRef = useRef<HTMLButtonElement>(null);
   const { 
     currentUser, 
     users, 
@@ -29,14 +38,31 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="h-16 border-b border-emerald-950/10 bg-white/95 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="min-w-0 border-b border-emerald-950/10 bg-white/95 backdrop-blur-md px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-3 lg:sticky lg:top-0 z-20">
       {/* Zone 1: Brand title & Context */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold shadow-sm">
+      <div className="flex min-w-0 basis-full items-center gap-3 xl:basis-auto">
+        <button
+          type="button"
+          ref={navigationButtonRef}
+          aria-label={isNavigationOpen ? '關閉系統導覽' : '開啟系統導覽'}
+          aria-expanded={isNavigationOpen}
+          aria-controls="system-navigation"
+          onClick={onToggleNavigation}
+          onKeyDown={event => {
+            if (event.key === 'Escape' && isNavigationOpen) {
+              event.preventDefault();
+              onCloseNavigation();
+            }
+          }}
+          className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 lg:hidden"
+        >
+          <Menu size={20} />
+        </button>
+        <div className="w-8 h-8 shrink-0 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold shadow-sm">
           <Store size={18} />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-bold text-slate-900 tracking-tight text-base">綠境草本頭皮護理沙龍</span>
             <span className="text-slate-300 font-light">/</span>
             <span className="text-sm font-medium text-emerald-800">{tabLabels[activeTab] || '決策支援中心'}</span>
@@ -60,11 +86,12 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Zone 3: Primary Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         {/* Quick Service Usage Entry Button */}
         <button
+          type="button"
           onClick={() => setIsServiceUsageModalOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
+          className="flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 whitespace-nowrap bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
           title="沙龍做客人快速登記洗髮精/精華液耗用，即刻扣庫存"
         >
           <Plus size={15} />
@@ -73,8 +100,10 @@ export const Header: React.FC = () => {
 
         {/* Notifications & Auto Alert Settings */}
         <button
+          type="button"
+          aria-label={`站內通知與設定，未讀 ${unreadCount} 則`}
           onClick={() => setIsNotificationSettingsOpen(true)}
-          className="relative p-2 text-slate-500 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-lg transition-colors cursor-pointer"
+          className="relative flex shrink-0 items-center justify-center p-2 text-slate-500 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-lg transition-colors cursor-pointer"
           title={`未讀站內紀錄 ${unreadCount} 則；LINE／Email 示範，未實際發送`}
         >
           <Bell size={18} />
@@ -86,27 +115,53 @@ export const Header: React.FC = () => {
         </button>
 
         {/* User Switcher Dropdown for Testing Role Perspectives */}
-        <div className="relative group" title="角色切換供操作情境展示，目前未提供登入驗證與權限隔離。">
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-inner">
+        <div
+          className="relative"
+          title="角色切換供操作情境展示，目前未提供登入驗證與權限隔離。"
+          onBlur={event => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setIsRoleSelectorOpen(false);
+          }}
+          onKeyDown={event => {
+            if (event.key === 'Escape' && isRoleSelectorOpen) {
+              event.preventDefault();
+              setIsRoleSelectorOpen(false);
+              roleButtonRef.current?.focus();
+            }
+          }}
+        >
+          <button
+            type="button"
+            ref={roleButtonRef}
+            aria-label={`切換示範角色，目前為 ${currentUser.name}`}
+            aria-expanded={isRoleSelectorOpen}
+            aria-controls="role-selector"
+            onClick={() => setIsRoleSelectorOpen(open => !open)}
+            className="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer"
+          >
+            <span className="w-8 h-8 shrink-0 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-inner">
               {currentUser.avatar}
-            </div>
-            <div className="text-left hidden md:block">
-              <p className="text-xs font-bold text-slate-800 leading-tight">{currentUser.name}</p>
-              <p className="text-[10px] text-slate-600">角色示範 · {currentUser.title.split(' ')[0]}</p>
-            </div>
-          </div>
+            </span>
+            <span className="text-left hidden md:block">
+              <span className="block text-xs font-bold text-slate-800 leading-tight">{currentUser.name}</span>
+              <span className="block text-[10px] text-slate-600">角色示範 · {currentUser.title.split(' ')[0]}</span>
+            </span>
+          </button>
 
           {/* Quick User Role Switcher Menu */}
-          <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg p-1 hidden group-hover:block hover:block z-30 animate-in fade-in">
+          <div id="role-selector" hidden={!isRoleSelectorOpen} className="absolute right-0 mt-2 w-52 max-w-[calc(100vw-2rem)] max-h-[60dvh] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-30 animate-in fade-in">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-600 border-b border-slate-100 uppercase tracking-wider">
               切換示範角色（{users.length} 位）
             </div>
             <p className="px-3 py-2 text-[11px] text-slate-500">角色切換供操作情境展示，目前未提供登入驗證與權限隔離。</p>
             {users.map(u => (
               <button
+                type="button"
                 key={u.id}
-                onClick={() => setCurrentUser(u)}
+                onClick={() => {
+                  setCurrentUser(u);
+                  setIsRoleSelectorOpen(false);
+                  roleButtonRef.current?.focus();
+                }}
                 className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
                   currentUser.id === u.id ? 'bg-emerald-50 text-emerald-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'
                 }`}

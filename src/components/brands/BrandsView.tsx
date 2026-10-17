@@ -187,7 +187,7 @@ export const BrandsView: React.FC = () => {
           <p className="text-xs text-slate-500">月需求金額＝Σ（週需求×售價）×4.3；年週轉＝Σ（週需求×成本）×52÷目前庫存成本（分母為 0 時顯示 0.0）。成長率是固定示例。</p>
         </div>
 
-        <div className="overflow-x-auto">
+        <div tabIndex={0} role="region" aria-label="品牌資料表，可左右捲動" className="table-scroll">
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 text-[11px]">
               <tr>
@@ -241,8 +241,8 @@ export const BrandsView: React.FC = () => {
 
       {/* Add Brand Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+        <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="modal-panel bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <h2 className="text-lg font-bold text-slate-900 mb-1">新增合作品牌</h2>
             <p className="text-xs text-slate-500 mb-4">建立新的進貨品牌檔案，建立後即可關聯商品與供應商。</p>
 

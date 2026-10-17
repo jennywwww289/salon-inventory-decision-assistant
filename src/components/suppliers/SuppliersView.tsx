@@ -237,8 +237,8 @@ export const SuppliersView: React.FC = () => {
 
       {/* Add Supplier Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="modal-panel bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
             <h2 className="text-lg font-bold text-slate-900 mb-1">新增供應商合作檔案</h2>
             <p className="text-xs text-slate-500 mb-4">登記供應商聯繫方式、最小起訂門檻與交期合約。</p>
 

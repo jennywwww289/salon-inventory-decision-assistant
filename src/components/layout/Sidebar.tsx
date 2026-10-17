@@ -15,7 +15,12 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { activeTab, setActiveTab, inventorySummary, insights, purchaseOrders } = useApp();
 
   const criticalIssuesCount = inventorySummary.criticalCount;
@@ -82,7 +87,22 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 bg-slate-50/80 border-r border-emerald-950/10 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
+    <aside
+      id="system-navigation"
+      aria-label="庫存系統導覽"
+      onKeyDown={event => {
+        if (event.key === 'Escape' && isOpen) {
+          event.preventDefault();
+          onClose();
+        }
+      }}
+      className={`${isOpen ? 'flex' : 'hidden'} w-full max-h-[65dvh] overflow-y-auto bg-slate-50/80 border-b border-emerald-950/10 flex-col justify-between shrink-0 lg:flex lg:w-64 lg:max-h-none lg:border-b-0 lg:border-r lg:min-h-[calc(100vh-4rem)]`}
+    >
+      <div className="flex justify-end px-4 pt-3 lg:hidden">
+        <button type="button" onClick={onClose} className="px-3 rounded-lg border border-slate-200 text-xs">
+          關閉導覽
+        </button>
+      </div>
       <div className="p-4 space-y-6">
         {/* Core Decision Framework Banner */}
         <div className="p-3 bg-white rounded-xl border border-emerald-900/10 shadow-xs">
@@ -101,7 +121,7 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Navigation list */}
-        <nav className="space-y-1">
+        <nav aria-label="系統分頁" className="space-y-1">
           {navItems.map((item, idx) => {
             if (item.type === 'divider') {
               return (
@@ -119,8 +139,10 @@ export const Sidebar: React.FC = () => {
 
             return (
               <button
+                type="button"
                 key={item.id}
-                onClick={() => setActiveTab(item.id!)}
+                onClick={() => { setActiveTab(item.id!); onClose(); }}
+                aria-current={isActive ? 'page' : undefined}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                   isActive
                     ? 'bg-emerald-800 text-white shadow-xs'

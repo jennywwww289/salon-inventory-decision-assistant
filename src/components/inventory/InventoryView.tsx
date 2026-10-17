@@ -97,13 +97,13 @@ export const InventoryView: React.FC = () => {
     <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-in fade-in duration-200">
       {/* 1. Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">門市即時庫存動態表</h1>
           <p className="text-xs text-slate-500 mt-1">
             依目前示範資料顯示全店 {products.length} 項產品；庫存異動後即更新，覆蓋天數依庫存與需求參數試算。
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <button
             onClick={() => setIsServiceUsageModalOpen(true)}
             className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -116,21 +116,23 @@ export const InventoryView: React.FC = () => {
 
       {/* 2. Filter Bar (Search, Brand, Supplier, Status, Category) */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-        <div className="flex flex-col md:flex-row gap-3">
+        <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(16rem,1fr)_auto]">
           {/* Search box */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3.5 top-2.5 text-slate-400" size={17} />
+          <div className="min-w-0 relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
             <input
               type="text"
+              aria-label="搜尋商品名稱、SKU或品牌"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="搜尋商品名稱、SKU 代碼、品牌..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white"
+              className="w-full pl-10 pr-16 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white"
             />
             {searchTerm && (
               <button
+                type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="absolute right-1 inset-y-0 px-2 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 清除
               </button>
@@ -138,8 +140,9 @@ export const InventoryView: React.FC = () => {
           </div>
 
           {/* Quick Status Filter Tabs: whole-store counts, independent of filters */}
-          <span className="text-[11px] text-slate-500 self-center">全店狀態數：</span>
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs overflow-x-auto">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="text-[11px] text-slate-500">全店狀態數：</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs">
             {[
               { id: 'ALL', label: '全部' },
               { id: 'Critical', label: '斷貨危機', count: products.filter(p => p.status === 'Critical').length, color: 'text-rose-600' },
@@ -148,6 +151,7 @@ export const InventoryView: React.FC = () => {
               { id: 'Healthy', label: '健康', count: products.filter(p => p.status === 'Healthy').length, color: 'text-emerald-700' }
             ].map(tab => (
               <button
+                type="button"
                 key={tab.id}
                 onClick={() => setSelectedStatus(tab.id)}
                 className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
@@ -165,16 +169,17 @@ export const InventoryView: React.FC = () => {
               </button>
             ))}
           </div>
+          </div>
         </div>
 
         {/* Secondary Filter Dropdowns */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 text-xs">
-          <div className="flex items-center gap-2">
+        <div className="grid grid-cols-1 gap-3 pt-2 border-t border-slate-100 text-xs sm:grid-cols-2 2xl:grid-cols-4">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="text-slate-400">品牌：</span>
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+              className="min-w-0 flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
             >
               <option value="ALL">全部 {brands.length} 個品牌</option>
               {brands.map(b => (
@@ -183,12 +188,12 @@ export const InventoryView: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="text-slate-400">供應商：</span>
             <select
               value={selectedSupplier}
               onChange={(e) => setSelectedSupplier(e.target.value)}
-              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+              className="min-w-0 flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
             >
               <option value="ALL">全部 {suppliers.length} 家供應商</option>
               {suppliers.map(s => (
@@ -197,12 +202,12 @@ export const InventoryView: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="text-slate-400">品類：</span>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+              className="min-w-0 flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
             >
               <option value="ALL">全部品類</option>
               <option value="洗髮淨化">洗髮淨化</option>
@@ -214,7 +219,7 @@ export const InventoryView: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex min-w-0 items-center gap-2">
             <span className="text-slate-400">排序：</span>
             <select
               value={`${sortBy}-${sortOrder}`}
@@ -223,7 +228,7 @@ export const InventoryView: React.FC = () => {
                 setSortBy(sb as any);
                 setSortOrder(so as any);
               }}
-              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+              className="min-w-0 flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
             >
               <option value="stock-asc">現有庫存：低到高 (優先關注)</option>
               <option value="stock-desc">現有庫存：高到低</option>
@@ -237,8 +242,8 @@ export const InventoryView: React.FC = () => {
 
       {/* 3. Main High-Density Table */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div tabIndex={0} role="region" aria-label="庫存清單，可左右捲動查看所有欄位" className="table-scroll">
+          <table className="inventory-table w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 font-mono text-[11px]">
               <tr>
                 <th className="py-3 px-4">商品名稱 / SKU</th>
@@ -275,7 +280,7 @@ export const InventoryView: React.FC = () => {
                         <div className="font-bold text-slate-900 group-hover:text-emerald-900 transition-colors">
                           {p.name}
                         </div>
-                        <div className="text-[11px] text-slate-600 flex items-center gap-1.5 mt-0.5">
+                        <div className="text-[11px] text-slate-600 flex flex-wrap items-center gap-1.5 mt-0.5">
                           <span className="font-mono">{p.sku}</span>
                           <span>·</span>
                           <span>{p.spec}</span>
@@ -332,7 +337,7 @@ export const InventoryView: React.FC = () => {
 
                       {/* Supplier & Lead time */}
                       <td className="py-3.5 px-4 text-slate-600 text-[11px]">
-                        <div className="text-slate-800 font-medium truncate max-w-[130px]">{p.supplierName}</div>
+                        <div className="text-slate-800 font-medium">{p.supplierName}</div>
                         <div className="text-slate-600">交期 {p.leadTime} 天 · MOQ {p.moq}</div>
                       </td>
 
@@ -358,7 +363,7 @@ export const InventoryView: React.FC = () => {
         </div>
 
         {/* Table footer count */}
-        <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <div className="p-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
           <span>
             共顯示 <strong className="text-slate-800 font-mono">{filteredProducts.length}</strong> 項商品 (總品項 {products.length})
           </span>

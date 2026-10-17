@@ -175,8 +175,8 @@ export const UsersView: React.FC = () => {
 
       {/* Add User Modal */}
       {isAddUserOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+        <div className="modal-overlay fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="modal-panel bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <h2 className="text-lg font-bold text-slate-900 mb-1">新增門市人員檔案</h2>
             <p className="text-xs text-slate-500 mb-4">建立目前示範資料中的人員檔案，供選擇經手人；不是登入帳號，也不授予權限。</p>
 
