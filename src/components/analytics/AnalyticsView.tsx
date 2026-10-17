@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatNumber } from '../../utils/inventoryCalculations';
 import { useApp } from '../../context/AppContext';
 import { 
   BarChart3, 
@@ -16,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export const AnalyticsView: React.FC = () => {
-  const { products, brands, inventorySummary, setActiveTab } = useApp();
+  const { products, brands, inventorySummary, purchaseOrders, movementSummary, setActiveTab } = useApp();
   const [activeTabSection, setActiveTabSection] = useState<'fourQuestions' | 'quarterly' | 'annual'>('fourQuestions');
 
   return (
@@ -26,7 +27,7 @@ export const AnalyticsView: React.FC = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">商業決策分析與展望</h1>
           <p className="text-xs text-slate-500 mt-1">
-            圍繞「發生了什麼 → 為什麼 → 可能發生什麼 → 我能做什麼」四大商業決策核心，為門市資金與庫存護航。
+            庫存、採購及帳本彙總依目前示範資料計算；品牌成長、原因、預測與效益是固定情境示意，不隨庫存重算。
           </p>
         </div>
         <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 text-xs">
@@ -44,7 +45,7 @@ export const AnalyticsView: React.FC = () => {
               activeTabSection === 'quarterly' ? 'bg-emerald-800 text-white font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            未來 90 天展望
+            90 天展望示意
           </button>
           <button
             onClick={() => setActiveTabSection('annual')}
@@ -52,7 +53,7 @@ export const AnalyticsView: React.FC = () => {
               activeTabSection === 'annual' ? 'bg-emerald-800 text-white font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            年度週期總覽
+            年度情境示意
           </button>
         </div>
       </div>
@@ -67,12 +68,12 @@ export const AnalyticsView: React.FC = () => {
                 <span className="w-6 h-6 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">1</span>
                 <h2 className="text-base font-bold text-slate-900">發生了什麼事？ (WHAT HAPPENED?)</h2>
               </div>
-              <span className="text-xs text-slate-400 font-mono">基於近 30-90 天實際交易與帳本數據</span>
+              <span className="text-xs text-slate-400 font-mono">庫存／採購彙總：目前全部已載入資料</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
-                <span className="font-bold text-slate-800 block">品牌銷售成長分歧</span>
+                <span className="font-bold text-slate-800 block">品牌成長示意（固定百分比）</span>
                 <p className="text-slate-600 leading-relaxed">
                   <strong className="text-emerald-700">AROMASE 艾瑪絲</strong> 成長 +18%，
                   <strong className="text-emerald-700">卡詩</strong> 成長 +12%；
@@ -84,15 +85,19 @@ export const AnalyticsView: React.FC = () => {
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
                 <span className="font-bold text-slate-800 block">庫存動態與週轉</span>
                 <p className="text-slate-600 leading-relaxed">
-                  全店 100 SKUs 總庫存價值為 <strong className="font-mono text-slate-900">NT$ {inventorySummary.totalInventoryCost.toLocaleString()}</strong>。
-                  其中有 4 項主力處於斷貨臨界點，7 項積壓庫存週轉覆蓋超過 16 週。
+                  全店 {inventorySummary.totalSkus} SKUs 庫存成本金額為 <strong className="font-mono text-slate-900">NT$ {formatNumber(inventorySummary.totalInventoryCost)}</strong>。
+                  其中有 {inventorySummary.criticalCount} 項為危急、{inventorySummary.lowCount} 項為低水位、{inventorySummary.overstockCount} 項為積壓狀態。
                 </p>
               </div>
 
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
                 <span className="font-bold text-slate-800 block">採購履約現況</span>
                 <p className="text-slate-600 leading-relaxed">
-                  本月已完成入庫採購單 1 筆 (40 瓶)，目前有 1 筆在途中配送 (24 瓶)，另有 1 筆草稿待店長核准發單。
+                  全部單據：已驗收 {purchaseOrders.filter(po => po.status === 'Received').length} 筆、
+                  下單中 {purchaseOrders.filter(po => po.status === 'Ordered').length} 筆、
+                  草稿 {purchaseOrders.filter(po => po.status === 'Draft').length} 筆。
+                  帳本已記錄採購入庫 {formatNumber(movementSummary.purchaseIn)} 瓶；
+                  顧客退回 {formatNumber(movementSummary.customerReturnIn)} 瓶、退回供應商 {formatNumber(movementSummary.supplierReturnOut)} 瓶。
                 </p>
               </div>
             </div>
@@ -105,7 +110,7 @@ export const AnalyticsView: React.FC = () => {
                 <span className="w-6 h-6 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">2</span>
                 <h2 className="text-base font-bold text-slate-900">為什麼會發生？ (WHY DID IT HAPPEN?)</h2>
               </div>
-              <span className="text-xs text-slate-400 font-mono">系統僅以具備數據佐證的因素進行關聯分析</span>
+              <span className="text-xs text-slate-400 font-mono">固定原因示例，未分析實際歷史資料</span>
             </div>
 
             <div className="space-y-3 text-xs">
@@ -114,7 +119,7 @@ export const AnalyticsView: React.FC = () => {
                 <div>
                   <strong className="text-slate-900 block mb-0.5">艾瑪絲銷售成長 18% 之可能原因：</strong>
                   <p className="text-slate-600 leading-relaxed">
-                    系統分析近 4 週數據顯示：門市推出的「秋季換季頭皮舒壓淨化療程」廣泛採用 ARM-001 (5α捷利爾淨化液) 作為開端，帶動單品耗用量暴增 65%，並拉抬客人順手帶走居家款零售。
+                    示例情境假設：門市推出的「秋季換季頭皮舒壓淨化療程」廣泛採用 ARM-001 (5α捷利爾淨化液) 作為開端，帶動單品耗用量增加 65%，並拉抬居家款零售；此為預設敘述，非歷史分析結果。
                   </p>
                 </div>
               </div>
@@ -148,7 +153,7 @@ export const AnalyticsView: React.FC = () => {
                 <span className="w-6 h-6 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">3</span>
                 <h2 className="text-base font-bold text-slate-900">接下來可能發生什麼？ (WHAT MIGHT HAPPEN NEXT?)</h2>
               </div>
-              <span className="text-xs text-slate-400 font-mono">以合理區間估計而非保證單一數字</span>
+              <span className="text-xs text-slate-400 font-mono">固定風險與效益示意，無預測模型或準確率驗證</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -177,7 +182,7 @@ export const AnalyticsView: React.FC = () => {
                 <span className="w-6 h-6 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-xs">4</span>
                 <h2 className="text-base font-bold text-slate-900">我能採取什麼行動？ (WHAT CAN I DO?)</h2>
               </div>
-              <span className="text-xs text-slate-400 font-mono">具體、可執行且店長握有主導權的選項</span>
+              <span className="text-xs text-slate-400 font-mono">固定方案示例；以下按鈕僅前往對應頁面</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
@@ -192,7 +197,7 @@ export const AnalyticsView: React.FC = () => {
                   onClick={() => setActiveTab('purchase')}
                   className="w-full py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <span>立即建立採購單</span>
+                  <span>前往採購頁</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
@@ -208,7 +213,7 @@ export const AnalyticsView: React.FC = () => {
                   onClick={() => setActiveTab('insights')}
                   className="w-full py-1.5 bg-purple-900 hover:bg-purple-950 text-white rounded-lg font-semibold flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <span>查看去化專案建議</span>
+                  <span>查看 AI 建議示範</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
@@ -224,7 +229,7 @@ export const AnalyticsView: React.FC = () => {
                   onClick={() => setActiveTab('inventory')}
                   className="w-full py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-semibold flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <span>前往調整安全水位</span>
+                  <span>查看庫存與補貨點</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
@@ -237,9 +242,9 @@ export const AnalyticsView: React.FC = () => {
       {activeTabSection === 'quarterly' && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-1">未來 90 天業務展望 (Next 90 Days Outlook)</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-1">未來 90 天展望示意（固定內容）</h2>
             <p className="text-xs text-slate-500">
-              考量秋冬換季、沙龍年節檔期預約常模與供應商歷史交期，以區間機率進行的情境預估。
+              以下品項數、成長區間與情境均為固定示例，未依庫存或歷史資料計算，也不代表已驗證的預測。
             </p>
           </div>
 
@@ -283,8 +288,8 @@ export const AnalyticsView: React.FC = () => {
       {activeTabSection === 'annual' && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-1">年度四季流速與營運週期概況</h2>
-            <p className="text-xs text-slate-500">協助沙龍店長進行全年度資金籌措、大宗談判與備貨週期預算規劃。</p>
+            <h2 className="text-lg font-bold text-slate-900 mb-1">年度四季情境示意（固定內容）</h2>
+            <p className="text-xs text-slate-500">以下季節、預算比重及營運敘述是固定課程示例，未依當日日期或真實營運資料更新。</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
@@ -305,7 +310,7 @@ export const AnalyticsView: React.FC = () => {
             </div>
 
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-              <span className="font-sans text-emerald-800 font-bold block mb-1">秋季 (9-11月) 當前</span>
+              <span className="font-sans text-emerald-800 font-bold block mb-1">秋季 (9-11月) 示例情境</span>
               <span className="font-bold text-emerald-950 text-sm font-sans block mb-1">落髮防脫與水療修護</span>
               <p className="font-sans text-[11px] text-slate-700 leading-relaxed">
                 頭皮檢測預約暴增，高單價育髮安瓶與滋潤髮膜為主力營收來源。

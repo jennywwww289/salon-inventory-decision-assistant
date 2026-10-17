@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Plus, Package } from 'lucide-react';
 import { Product } from '../../types';
+import { formatValidationErrors, parseNumericInput } from '../../utils/validation';
 
 interface Props {
   onClose: () => void;
@@ -16,41 +17,43 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
   const [brandId, setBrandId] = useState(brands[0]?.id || '');
   const [category, setCategory] = useState<Product['category']>('洗髮淨化');
   const [supplierId, setSupplierId] = useState(suppliers[0]?.id || '');
-  const [unitCost, setUnitCost] = useState<number>(300);
-  const [sellingPrice, setSellingPrice] = useState<number>(650);
-  const [stock, setStock] = useState<number>(20);
-  const [reorderPoint, setReorderPoint] = useState<number>(15);
-  const [moq, setMoq] = useState<number>(10);
-  const [leadTime, setLeadTime] = useState<number>(10);
-  const [weeklyDemand, setWeeklyDemand] = useState<number>(4);
+  const [unitCost, setUnitCost] = useState('300');
+  const [sellingPrice, setSellingPrice] = useState('650');
+  const [stock, setStock] = useState('20');
+  const [reorderPoint, setReorderPoint] = useState('15');
+  const [moq, setMoq] = useState('10');
+  const [leadTime, setLeadTime] = useState('10');
+  const [weeklyDemand, setWeeklyDemand] = useState('4');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !sku.trim()) return;
-
     const brand = brands.find(b => b.id === brandId);
     const supplier = suppliers.find(s => s.id === supplierId);
+    const numbers = {
+      unitCost: parseNumericInput(unitCost), sellingPrice: parseNumericInput(sellingPrice),
+      stock: parseNumericInput(stock), reorderPoint: parseNumericInput(reorderPoint),
+      moq: parseNumericInput(moq), leadTime: parseNumericInput(leadTime), weeklyDemand: parseNumericInput(weeklyDemand),
+    };
 
-    addProduct({
+    const result = addProduct({
       sku: sku.trim().toUpperCase(),
       name: name.trim(),
       spec,
       brandId,
       brandName: brand ? brand.name : '自選品牌',
       category,
-      unitCost,
-      sellingPrice,
-      stock,
-      reorderPoint,
-      moq,
-      leadTime,
+      ...numbers,
       supplierId,
       supplierName: supplier ? supplier.name : '常規供應商',
-      weeklyDemand,
-      monthlyDemand: Math.round(weeklyDemand * 4.3),
-      status: stock <= reorderPoint ? (stock < reorderPoint / 2 ? 'Critical' : 'Low') : 'Healthy'
+      monthlyDemand: Math.round(numbers.weeklyDemand * 4.3),
+      status: numbers.stock <= numbers.reorderPoint ? (numbers.stock < numbers.reorderPoint / 2 ? 'Critical' : 'Low') : 'Healthy'
     });
-
+    if (result.ok === false) {
+      setError(formatValidationErrors(result.errors));
+      return;
+    }
+    setError('');
     onClose();
   };
 
@@ -73,6 +76,7 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
+          {error && <p role="alert" className="text-rose-700">{error}</p>}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-slate-700 font-semibold mb-1">商品名稱</label>
@@ -159,7 +163,7 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
                 type="number"
                 min="0"
                 value={stock}
-                onChange={(e) => setStock(parseInt(e.target.value) || 0)}
+                onChange={(e) => setStock(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
@@ -172,7 +176,8 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
                 type="number"
                 min="0"
                 value={unitCost}
-                onChange={(e) => setUnitCost(parseInt(e.target.value) || 0)}
+                step="any"
+                onChange={(e) => setUnitCost(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
@@ -183,7 +188,8 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
                 type="number"
                 min="0"
                 value={sellingPrice}
-                onChange={(e) => setSellingPrice(parseInt(e.target.value) || 0)}
+                step="any"
+                onChange={(e) => setSellingPrice(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
@@ -194,9 +200,9 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
               <label className="block text-slate-700 font-semibold mb-1">安全補貨點</label>
               <input
                 type="number"
-                min="1"
+                min="0"
                 value={reorderPoint}
-                onChange={(e) => setReorderPoint(parseInt(e.target.value) || 1)}
+                onChange={(e) => setReorderPoint(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
@@ -206,7 +212,7 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
                 type="number"
                 min="1"
                 value={moq}
-                onChange={(e) => setMoq(parseInt(e.target.value) || 1)}
+                onChange={(e) => setMoq(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>
@@ -214,10 +220,10 @@ export const NewProductModal: React.FC<Props> = ({ onClose }) => {
               <label className="block text-slate-700 font-semibold mb-1">預估每週需求</label>
               <input
                 type="number"
-                min="0.5"
-                step="0.5"
+                min="0"
+                step="any"
                 value={weeklyDemand}
-                onChange={(e) => setWeeklyDemand(parseFloat(e.target.value) || 1)}
+                onChange={(e) => setWeeklyDemand(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
               />
             </div>

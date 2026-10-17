@@ -9,7 +9,9 @@ export type TransactionType =
   | 'Sale'                // 門市銷售
   | 'Inventory Adjustment'// 盤點調整
   | 'Damage / Loss'       // 損耗 / 瑕疵報廢
-  | 'Return';             // 退貨處理
+  | 'Return';             // 退貨處理，須指定方向
+
+export type ReturnDirection = 'To Supplier' | 'From Customer';
 
 export type POStatus = 'Draft' | 'Approved' | 'Ordered' | 'Received' | 'Cancelled';
 
@@ -97,6 +99,9 @@ export interface InventoryTransaction {
   userName: string;
   timestamp: string;
   resultingStock: number;
+  purchaseOrderId?: string; // 採購入庫來源單據
+  unitCost?: number; // 異動當時的單位成本；舊紀錄可能未保存
+  returnDirection?: ReturnDirection;
   serviceType?: string;      // 若為服務使用：填入療程名稱
   note?: string;
 }

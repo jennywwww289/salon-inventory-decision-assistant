@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { PurchaseOrder, POStatus } from '../../types';
+import { POStatus } from '../../types';
 import { 
   ShoppingCart, 
   Plus, 
@@ -18,13 +18,28 @@ import {
   Archive,
   Info
 } from 'lucide-react';
+import { formatValidationErrors } from '../../utils/validation';
+import { canTransitionPO, PO_STATUS_LABELS } from '../../utils/purchaseOrder';
 import { NewPOModal } from '../modals/NewPOModal';
 
 export const PurchaseOrdersView: React.FC = () => {
-  const { purchaseOrders, updatePOStatus } = useApp();
-  const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
+  const { purchaseOrders, updatePOStatus, products } = useApp();
+  const [selectedPOId, setSelectedPOId] = useState<string | null>(null);
+  const selectedPO = purchaseOrders.find(po => po.id === selectedPOId) ?? null;
   const [isNewPOModalOpen, setIsNewPOModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [statusError, setStatusError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const handleStatusChange = (poId: string, status: POStatus) => {
+    const result = updatePOStatus(poId, status);
+    if (result.ok === false) {
+      setStatusError(formatValidationErrors(result.errors));
+      setStatusMessage('');
+      return;
+    }
+    setStatusError('');
+    setStatusMessage(`採購單 ${result.value.poNumber}：${PO_STATUS_LABELS[result.value.status]}。`);
+  };
 
   const filteredPOs = purchaseOrders.filter(po => {
     if (statusFilter === 'ALL') return true;
@@ -38,12 +53,14 @@ export const PurchaseOrdersView: React.FC = () => {
       case 'Approved':
         return <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded text-xs font-semibold">已核准 (Approved)</span>;
       case 'Ordered':
-        return <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded text-xs font-semibold">已向供應商下單 (Ordered)</span>;
+        return <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded text-xs font-semibold">已標記下單 (Ordered)</span>;
       case 'Received':
         return <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-0.5 rounded text-xs font-bold flex items-center gap-1">
           <CheckCircle2 size={12} />
           <span>已入庫點收 (Received)</span>
         </span>;
+      case 'Cancelled':
+        return <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">已取消 (Cancelled)</span>;
       default:
         return <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">{status}</span>;
     }
@@ -56,7 +73,7 @@ export const PurchaseOrdersView: React.FC = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">採購訂單與入庫點收</h1>
           <p className="text-xs text-slate-500 mt-1">
-            人機協同採購流程：AI 建議 → 店長審查與增減數量 → 核准下單 → 到貨點收自動入庫回寫帳本。
+            手動或示範建議建立草稿 → 核准 → 標記下單 → 驗收入庫。操作修改目前示範資料，不會對外送單；角色不限制核准。
           </p>
         </div>
         <button
@@ -64,27 +81,30 @@ export const PurchaseOrdersView: React.FC = () => {
           className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <Plus size={16} />
-          <span>建立新採購單</span>
+          <span>建立採購草稿</span>
         </button>
       </div>
+
+      {statusError && <p role="alert" className="text-sm text-rose-700">{statusError}</p>}
+      {statusMessage && <p role="status" aria-live="polite" className="text-sm text-emerald-800">{statusMessage}</p>}
 
       {/* 2. Process Stepper Explanation */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-          店長審核確認流程 (PURCHASE DECISION PIPELINE)
+          示範採購狀態流程（非權限控管）
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-            <span className="font-bold text-slate-800 block mb-0.5">1. AI 數據建議或手動建單</span>
-            <span className="text-slate-500 text-[11px]">比對庫存、每週需求、交期與 MOQ</span>
+            <span className="font-bold text-slate-800 block mb-0.5">1. 建立採購草稿</span>
+            <span className="text-slate-500 text-[11px]">手動輸入、固定建議示例或既有公式試算</span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-            <span className="font-bold text-slate-800 block mb-0.5">2. 店長微調數量與審核</span>
-            <span className="text-slate-500 text-[11px]">身為最終決策者，隨時修改採購數</span>
+            <span className="font-bold text-slate-800 block mb-0.5">2. 核准草稿</span>
+            <span className="text-slate-500 text-[11px]">建單前確認數量；目前無已建單編輯或角色限制</span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
             <span className="font-bold text-slate-800 block mb-0.5">3. 標記已向供應商下單</span>
-            <span className="text-slate-500 text-[11px]">進入物流配送，自動列入在途庫存</span>
+            <span className="text-slate-500 text-[11px]">只更新示範狀態及在途量，不會送單或安排物流</span>
           </div>
           <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200">
             <span className="font-bold text-emerald-900 block mb-0.5">4. 到貨驗收一鍵入庫</span>
@@ -95,7 +115,7 @@ export const PurchaseOrdersView: React.FC = () => {
 
       {/* 3. Filter tabs */}
       <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 text-xs w-fit">
-        {['ALL', 'Draft', 'Approved', 'Ordered', 'Received'].map(st => (
+        {['ALL', 'Draft', 'Approved', 'Ordered', 'Received', 'Cancelled'].map(st => (
           <button
             key={st}
             onClick={() => setStatusFilter(st)}
@@ -124,7 +144,7 @@ export const PurchaseOrdersView: React.FC = () => {
               return (
                 <div
                   key={po.id}
-                  onClick={() => setSelectedPO(po)}
+                  onClick={() => { setSelectedPOId(po.id); setStatusError(''); setStatusMessage(''); }}
                   className={`bg-white border rounded-2xl p-5 shadow-xs transition-all cursor-pointer ${
                     isSelected ? 'border-emerald-700 ring-2 ring-emerald-700/10' : 'border-slate-200 hover:border-slate-300'
                   }`}
@@ -135,7 +155,7 @@ export const PurchaseOrdersView: React.FC = () => {
                       {po.isAiAssisted && (
                         <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
                           <Sparkles size={11} />
-                          <span>AI 輔助建議</span>
+                          <span>示範建議／公式建單</span>
                         </span>
                       )}
                     </div>
@@ -185,24 +205,24 @@ export const PurchaseOrdersView: React.FC = () => {
                       由 {po.createdByName} 於 {po.createdAt} 建立
                     </span>
                     <div className="flex items-center gap-2">
-                      {po.status === 'Draft' && (
+                      {canTransitionPO(po.status, 'Approved') && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updatePOStatus(po.id, 'Approved');
+                            handleStatusChange(po.id, 'Approved');
                           }}
                           className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1 cursor-pointer"
                         >
                           <Check size={13} />
-                          <span>店長核准 (Approve)</span>
+                          <span>核准草稿 (Approve)</span>
                         </button>
                       )}
 
-                      {po.status === 'Approved' && (
+                      {canTransitionPO(po.status, 'Ordered') && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updatePOStatus(po.id, 'Ordered');
+                            handleStatusChange(po.id, 'Ordered');
                           }}
                           className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1 cursor-pointer"
                         >
@@ -211,11 +231,11 @@ export const PurchaseOrdersView: React.FC = () => {
                         </button>
                       )}
 
-                      {po.status === 'Ordered' && (
+                      {canTransitionPO(po.status, 'Received') && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updatePOStatus(po.id, 'Received');
+                            handleStatusChange(po.id, 'Received');
                           }}
                           className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-xs flex items-center gap-1 cursor-pointer"
                         >
@@ -250,6 +270,7 @@ export const PurchaseOrdersView: React.FC = () => {
               <div>
                 <span className="text-slate-400 block text-[11px]">單號</span>
                 <span className="font-mono font-bold text-slate-900 text-sm">{selectedPO.poNumber}</span>
+                <div className="mt-1">{getStatusBadge(selectedPO.status)}</div>
               </div>
 
               <div>
@@ -262,7 +283,7 @@ export const PurchaseOrdersView: React.FC = () => {
                 <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-1">
                   <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
                     <Sparkles size={14} />
-                    <span>AI 推薦採購理由 (Why this PO?)</span>
+                    <span>建單時的示範建議／公式說明（非即時 AI 分析）</span>
                   </div>
                   <p className="text-slate-700 leading-relaxed text-[11px]">
                     {selectedPO.aiRationale}
@@ -277,7 +298,7 @@ export const PurchaseOrdersView: React.FC = () => {
                     <div key={i} className="p-2.5 flex justify-between bg-slate-50/50">
                       <div>
                         <div className="font-sans font-medium text-slate-900">{it.productName}</div>
-                        <div className="text-slate-400">目前庫存：{it.currentStock} 瓶</div>
+                        <div className="text-slate-400">目前庫存：{products.find(p => p.id === it.productId)?.stock ?? '商品不存在'} 瓶</div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-slate-900">{it.quantity} 瓶</div>
@@ -295,27 +316,29 @@ export const PurchaseOrdersView: React.FC = () => {
                 </span>
               </div>
 
+              {statusError && <p role="alert" className="text-rose-700">{statusError}</p>}
+
               {/* Status change actions */}
               <div className="pt-2">
-                {selectedPO.status === 'Draft' && (
+                {canTransitionPO(selectedPO.status, 'Approved') && (
                   <button
-                    onClick={() => updatePOStatus(selectedPO.id, 'Approved')}
+                    onClick={() => handleStatusChange(selectedPO.id, 'Approved')}
                     className="w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer"
                   >
-                    店長核准採購單
+                    核准採購草稿
                   </button>
                 )}
-                {selectedPO.status === 'Approved' && (
+                {canTransitionPO(selectedPO.status, 'Ordered') && (
                   <button
-                    onClick={() => updatePOStatus(selectedPO.id, 'Ordered')}
+                    onClick={() => handleStatusChange(selectedPO.id, 'Ordered')}
                     className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer"
                   >
-                    確認已發單給供應商
+                    標記已下單（示範）
                   </button>
                 )}
-                {selectedPO.status === 'Ordered' && (
+                {canTransitionPO(selectedPO.status, 'Received') && (
                   <button
-                    onClick={() => updatePOStatus(selectedPO.id, 'Received')}
+                    onClick={() => handleStatusChange(selectedPO.id, 'Received')}
                     className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer"
                   >
                     貨到點收！立即入庫更新

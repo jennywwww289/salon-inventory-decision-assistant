@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { AIInsight, InsightSeverity } from '../../types';
+import { formatValidationErrors, parseNumericInput } from '../../utils/validation';
 import { 
   BrainCircuit, 
   AlertTriangle, 
@@ -32,8 +33,9 @@ export const AIInsightsView: React.FC = () => {
 
   const [activeCategory, setActiveCategory] = useState<string>('ALL');
   const [modifyingInsightId, setModifyingInsightId] = useState<string | null>(null);
-  const [adjustedQty, setAdjustedQty] = useState<number>(30);
+  const [adjustedQty, setAdjustedQty] = useState('30');
   const [feedbackPromptId, setFeedbackPromptId] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
   const filteredInsights = insights.filter(i => {
     if (activeCategory === 'ALL') return true;
@@ -46,47 +48,53 @@ export const AIInsightsView: React.FC = () => {
   const handleCreatePOFromInsight = (insight: AIInsight, finalQty?: number) => {
     const targetProduct = products.find(p => p.id === insight.productId);
     if (!targetProduct) {
-      setActiveTab('purchase');
+      setError('建單商品不存在，請重新選擇商品。');
       return;
     }
 
-    const orderQty = finalQty || insight.suggestedQty || Math.max(targetProduct.moq, Math.round(targetProduct.weeklyDemand * 3));
+    const orderQty = finalQty ?? insight.suggestedQty ?? Math.max(targetProduct.moq, Math.round(targetProduct.weeklyDemand * 3));
 
-    createPurchaseOrder({
+    const result = createPurchaseOrder({
       supplierId: targetProduct.supplierId,
       items: [{
         productId: targetProduct.id,
         quantity: orderQty,
-        unitCost: insight.unitCost || targetProduct.unitCost
+        unitCost: insight.unitCost ?? targetProduct.unitCost
       }],
       expectedDeliveryDate: new Date(Date.now() + targetProduct.leadTime * 86400000).toISOString().split('T')[0],
-      notes: `由 AI 決策建議「${insight.title}」自動生成之採購單`,
+      notes: `由 AI 建議示範「${insight.title}」手動建立採購草稿`,
       isAiAssisted: true,
-      aiRationale: `${insight.explanation}，預測：${insight.forecast}`
+      aiRationale: `固定示例內容，非即時分析：${insight.explanation}；情境示意：${insight.forecast}`
     });
-
+    if (result.ok === false) {
+      setError(formatValidationErrors(result.errors));
+      return;
+    }
+    setError('');
     respondToInsight({
       insightId: insight.id,
-      action: finalQty ? 'Modify' : 'Accept',
+      action: finalQty !== undefined ? 'Modify' : 'Accept',
       adjustedQty: orderQty
     });
 
+    setModifyingInsightId(null);
     setActiveTab('purchase');
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-in fade-in duration-200">
+      {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">AI 智能決策建議中心</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">AI 建議示範</h1>
           <p className="text-xs text-slate-500 mt-1">
-            以數據佐證為核心的決策輔助：分析過去（發生了什麼）→ 解釋原因（為什麼）→ 預估風險（可能發生什麼）→ 提出行動方案。
+            以下建議、數值、日期與效益為固定示例，不隨庫存重算；未串接 AI 模型，也未評估預測準確率。
           </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-slate-600 font-mono bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-            店長擁有最終審核裁決權 (Human-in-the-Loop)
+            手動建立草稿，後續依採購流程操作
           </span>
         </div>
       </div>
@@ -99,10 +107,10 @@ export const AIInsightsView: React.FC = () => {
           </div>
           <div>
             <div className="font-bold text-emerald-950">
-              決策輔助三大核心原則：佐證重於建議 · 解釋重於自動化 · 人類核准後才執行
+              建立採購草稿會修改目前示範資料，不會直接下單或入庫
             </div>
             <div className="text-slate-600 text-[11px] mt-0.5">
-              系統不會擅自對外發送任何訂單；所有 AI 預測皆以區間或機率呈現，店長可隨時微調、採納或標記回饋。
+              回饋與忽略只記錄於目前頁面的示範狀態，重新整理會重設；不送交模型訓練。
             </div>
           </div>
         </div>
@@ -167,10 +175,10 @@ export const AIInsightsView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                  <span>偵測時間：{insight.createdAt}</span>
+                  <span>示例日期（固定）：{insight.createdAt}</span>
                   {insight.status !== 'Pending' && (
                     <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded font-sans">
-                      已處理 ({insight.status})
+                      {insight.status === 'Dismissed' ? '已忽略（示範）' : insight.status === 'Modified' ? '已微調並建立草稿' : '採購草稿已建立'}
                     </span>
                   )}
                 </div>
@@ -189,7 +197,7 @@ export const AIInsightsView: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
                     <Info size={14} className="text-emerald-800" />
-                    <span>為什麼會有此判斷？(Why?) 關鍵佐證</span>
+                    <span>原因與數值示意（固定內容）</span>
                   </h3>
                   <p className="text-slate-600 leading-relaxed mb-3">
                     {insight.explanation}
@@ -209,7 +217,7 @@ export const AIInsightsView: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-slate-800 mb-1 flex items-center gap-1.5">
                     <TrendingUp size={14} className="text-emerald-800" />
-                    <span>接下來可能發生什麼？(What might happen?)</span>
+                    <span>後續情境示意（非實際預測）</span>
                   </h3>
                   <p className="text-slate-600 leading-relaxed mb-3">
                     {insight.forecast}
@@ -223,7 +231,7 @@ export const AIInsightsView: React.FC = () => {
                       {insight.recommendation}
                     </p>
                     <div className="mt-2 text-[11px] text-emerald-800 font-mono font-semibold">
-                      潛在效益：{insight.potentialImpact}
+                      效益示意（未驗證）：{insight.potentialImpact}
                     </div>
                   </div>
                 </div>
@@ -239,17 +247,16 @@ export const AIInsightsView: React.FC = () => {
                       <input
                         type="number"
                         value={adjustedQty}
-                        onChange={(e) => setAdjustedQty(parseInt(e.target.value) || 0)}
+                        onChange={(e) => setAdjustedQty(e.target.value)}
                         className="w-16 bg-white border border-slate-300 rounded px-2 py-1 font-mono font-bold text-center"
                       />
                       <button
                         onClick={() => {
-                          handleCreatePOFromInsight(insight, adjustedQty);
-                          setModifyingInsightId(null);
+                          handleCreatePOFromInsight(insight, parseNumericInput(adjustedQty));
                         }}
                         className="px-3 py-1 bg-emerald-800 text-white rounded font-semibold hover:bg-emerald-900 cursor-pointer"
                       >
-                        以微調數量建單
+                        以微調數量建立採購草稿
                       </button>
                       <button
                         onClick={() => setModifyingInsightId(null)}
@@ -267,12 +274,12 @@ export const AIInsightsView: React.FC = () => {
                             className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
                             <ShoppingCart size={14} />
-                            <span>採納並建立採購單 ({insight.suggestedQty} 瓶)</span>
+                            <span>建立採購草稿 ({insight.suggestedQty} 瓶)</span>
                           </button>
                           <button
                             onClick={() => {
                               setModifyingInsightId(insight.id);
-                              setAdjustedQty(insight.suggestedQty || 20);
+                              setAdjustedQty(String(insight.suggestedQty ?? 20));
                             }}
                             className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
@@ -309,7 +316,7 @@ export const AIInsightsView: React.FC = () => {
                   {insight.feedback ? (
                     <div className="text-slate-400 text-[11px] flex items-center gap-1">
                       <CheckCircle2 size={13} className="text-emerald-600" />
-                      <span>已回饋：{insight.feedback.isHelpful ? '有幫助' : `不實用 (${insight.feedback.reason})`}</span>
+                      <span>已記錄示範回饋：{insight.feedback.isHelpful ? '有幫助' : `不實用 (${insight.feedback.reason})`}</span>
                     </div>
                   ) : feedbackPromptId === insight.id ? (
                     <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200 text-[11px]">
@@ -338,7 +345,7 @@ export const AIInsightsView: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                      <span>這項建議有幫助嗎？</span>
+                      <span>示範回饋：這項建議有幫助嗎？</span>
                       <button
                         onClick={() => submitInsightFeedback({ insightId: insight.id, isHelpful: true })}
                         className="p-1 hover:text-emerald-700 hover:bg-emerald-50 rounded transition-colors cursor-pointer flex items-center gap-0.5"

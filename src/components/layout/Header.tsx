@@ -7,7 +7,8 @@ export const Header: React.FC = () => {
     currentUser, 
     users, 
     setCurrentUser, 
-    notifications, 
+    notifications,
+    inventorySummary,
     setIsServiceUsageModalOpen,
     setIsNotificationSettingsOpen,
     activeTab
@@ -23,8 +24,8 @@ export const Header: React.FC = () => {
     suppliers: '供應商管理與促銷',
     purchase: '採購訂單與入庫',
     analytics: '商業決策分析',
-    insights: 'AI 智能決策洞察',
-    users: '門市人員與權限'
+    insights: 'AI 建議示範',
+    users: '人員與角色情境示範'
   };
 
   return (
@@ -43,9 +44,9 @@ export const Header: React.FC = () => {
           <div className="text-xs text-slate-600 hidden sm:block">
             <span>台北概念旗艦館</span>
             <span className="mx-1.5 text-slate-300">·</span>
-            <span className="tabular-nums">100 SKUs 常備</span>
+            <span className="tabular-nums">{inventorySummary.totalSkus} SKUs 常備</span>
             <span className="mx-1.5 text-slate-300">·</span>
-            <span>即時監控運作中</span>
+            <span>資料變動時計算庫存</span>
           </div>
         </div>
       </div>
@@ -54,7 +55,7 @@ export const Header: React.FC = () => {
       <div className="hidden lg:flex items-center gap-5 text-sm text-slate-600">
         <span className="text-xs text-emerald-800/80 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          倉管小幫手：庫存監控與智慧補貨已連線
+          課程原型：目前示範資料，未連接門市或 AI 服務
         </span>
       </div>
 
@@ -74,7 +75,7 @@ export const Header: React.FC = () => {
         <button
           onClick={() => setIsNotificationSettingsOpen(true)}
           className="relative p-2 text-slate-500 hover:text-emerald-800 hover:bg-emerald-50/50 rounded-lg transition-colors cursor-pointer"
-          title="查看補貨通知與 LINE 警報設定"
+          title={`未讀站內紀錄 ${unreadCount} 則；LINE／Email 示範，未實際發送`}
         >
           <Bell size={18} />
           {unreadCount > 0 && (
@@ -85,22 +86,23 @@ export const Header: React.FC = () => {
         </button>
 
         {/* User Switcher Dropdown for Testing Role Perspectives */}
-        <div className="relative group">
+        <div className="relative group" title="角色切換供操作情境展示，目前未提供登入驗證與權限隔離。">
           <div className="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer">
             <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-inner">
               {currentUser.avatar}
             </div>
             <div className="text-left hidden md:block">
               <p className="text-xs font-bold text-slate-800 leading-tight">{currentUser.name}</p>
-              <p className="text-[10px] text-slate-600">{currentUser.title.split(' ')[0]}</p>
+              <p className="text-[10px] text-slate-600">角色示範 · {currentUser.title.split(' ')[0]}</p>
             </div>
           </div>
 
           {/* Quick User Role Switcher Menu */}
           <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg p-1 hidden group-hover:block hover:block z-30 animate-in fade-in">
             <div className="px-3 py-2 text-[11px] font-bold text-slate-600 border-b border-slate-100 uppercase tracking-wider">
-              切換使用者視角 (4位預設)
+              切換示範角色（{users.length} 位）
             </div>
+            <p className="px-3 py-2 text-[11px] text-slate-500">角色切換供操作情境展示，目前未提供登入驗證與權限隔離。</p>
             {users.map(u => (
               <button
                 key={u.id}

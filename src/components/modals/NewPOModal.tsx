@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Plus, Trash2, ShoppingCart, Sparkles, AlertCircle } from 'lucide-react';
+import { formatValidationErrors, parseNumericInput, validatePurchaseInput } from '../../utils/validation';
 
 interface Props {
   onClose: () => void;
@@ -11,13 +12,15 @@ interface Props {
 export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, defaultQty }) => {
   const { suppliers, products, createPurchaseOrder } = useApp();
 
-  const [selectedSupplierId, setSelectedSupplierId] = useState<string>(suppliers[0]?.id || '');
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>(() => products.find(p => p.id === defaultProductId)?.supplierId ?? suppliers[0]?.id ?? '');
   const [expectedDate, setExpectedDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 10);
     return d.toISOString().split('T')[0];
   });
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
+  const submittedRef = useRef(false);
 
   // Selected supplier object
   const currentSupplier = suppliers.find(s => s.id === selectedSupplierId);
@@ -26,11 +29,11 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
   const availableProducts = products.filter(p => p.supplierId === selectedSupplierId);
 
   // Items to order state
-  const [items, setItems] = useState<{ productId: string; quantity: number }[]>(() => {
+  const [items, setItems] = useState<{ productId: string; quantity: number | string }[]>(() => {
     if (defaultProductId) {
       const p = products.find(prod => prod.id === defaultProductId);
       if (p) {
-        return [{ productId: p.id, quantity: defaultQty || p.moq }];
+        return [{ productId: p.id, quantity: defaultQty ?? p.moq }];
       }
     }
     // Default to first product if available
@@ -44,8 +47,11 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
     if (availableProducts.length === 0) return;
     // pick one that isn't already added if possible
     const unselected = availableProducts.find(p => !items.some(i => i.productId === p.id));
-    const toAdd = unselected || availableProducts[0];
-    setItems([...items, { productId: toAdd.id, quantity: toAdd.moq }]);
+    if (!unselected) {
+      setError('目前供應商的商品皆已加入，請調整原有品項。');
+      return;
+    }
+    setItems([...items, { productId: unselected.id, quantity: unselected.moq }]);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -63,32 +69,37 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
   let totalCost = 0;
   items.forEach(it => {
     const p = products.find(prod => prod.id === it.productId);
-    if (p) {
-      totalUnits += it.quantity;
-      totalCost += it.quantity * p.unitCost;
+    const quantity = parseNumericInput(it.quantity);
+    if (p && Number.isFinite(quantity)) {
+      totalUnits += quantity;
+      totalCost += quantity * p.unitCost;
     }
   });
 
   const isMoqMet = currentSupplier ? totalUnits >= currentSupplier.moq : true;
 
+  const buildInput = (supplierId = selectedSupplierId) => ({
+    supplierId,
+    items: items.map(it => {
+      const p = products.find(prod => prod.id === it.productId);
+      return {
+        productId: it.productId, quantity: parseNumericInput(it.quantity),
+        unitCost: p ? p.unitCost : 0,
+      };
+    }),
+    expectedDeliveryDate: expectedDate, notes: notes || undefined,
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (items.length === 0) return;
-
-    createPurchaseOrder({
-      supplierId: selectedSupplierId,
-      items: items.map(it => {
-        const p = products.find(prod => prod.id === it.productId);
-        return {
-          productId: it.productId,
-          quantity: it.quantity,
-          unitCost: p ? p.unitCost : 0
-        };
-      }),
-      expectedDeliveryDate: expectedDate,
-      notes: notes || undefined
-    });
-
+    if (submittedRef.current) return;
+    const result = createPurchaseOrder(buildInput());
+    if (result.ok === false) {
+      setError(formatValidationErrors(result.errors));
+      return;
+    }
+    setError('');
+    submittedRef.current = true;
     onClose();
   };
 
@@ -98,7 +109,7 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
           <div>
             <h2 className="text-lg font-bold text-slate-900">建立採購訂單草稿 (New Purchase Order)</h2>
-            <p className="text-xs text-slate-500">選擇供應商並設定各品項補貨數量，店長擁有最終審核權。</p>
+            <p className="text-xs text-slate-500">建立目前示範資料中的採購草稿，不會對外送單；核准須依狀態流程，但目前不依角色限制。</p>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer">
             <X size={20} />
@@ -106,6 +117,7 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs overflow-y-auto flex-1 pr-1">
+          {error && <p role="alert" className="text-rose-700">{error}</p>}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-slate-700 font-semibold mb-1">選擇供應商</label>
@@ -113,7 +125,8 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                 value={selectedSupplierId}
                 onChange={(e) => {
                   setSelectedSupplierId(e.target.value);
-                  setItems([]); // reset items when supplier changes
+                  const validation = validatePurchaseInput(buildInput(e.target.value), products, suppliers);
+                  setError(validation.ok === false ? formatValidationErrors(validation.errors) : '');
                 }}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-medium"
               >
@@ -165,6 +178,9 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                           onChange={(e) => handleItemChange(idx, 'productId', e.target.value)}
                           className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs"
                         >
+                          {!availableProducts.some(prod => prod.id === item.productId) && (
+                            <option value={item.productId} disabled>{p?.name ?? item.productId}（不符目前供應商，請更換或移除）</option>
+                          )}
                           {availableProducts.map(prod => (
                             <option key={prod.id} value={prod.id}>
                               {prod.name} ({prod.spec}) · 現存: {prod.stock} · 成本: ${prod.unitCost}
@@ -178,14 +194,14 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => handleItemChange(idx, 'quantity', parseInt(e.target.value) || 1)}
+                          onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
                           className="w-full bg-white border border-slate-200 rounded-lg p-2 text-center font-mono font-bold"
                           placeholder="數量"
                         />
                       </div>
 
                       <div className="w-24 text-right font-mono font-bold text-slate-800 text-xs">
-                        NT$ {p ? (p.unitCost * item.quantity).toLocaleString() : 0}
+                        NT$ {p && Number.isFinite(parseNumericInput(item.quantity)) ? (p.unitCost * parseNumericInput(item.quantity)).toLocaleString() : '—'}
                       </div>
 
                       <button
@@ -246,7 +262,6 @@ export const NewPOModal: React.FC<Props> = ({ onClose, defaultProductId, default
             </button>
             <button
               type="submit"
-              disabled={items.length === 0}
               className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold shadow-xs transition-colors cursor-pointer"
             >
               建立採購單草稿

@@ -21,25 +21,30 @@ export const NotificationModal: React.FC = () => {
     notifications, 
     markAllNotificationsRead, 
     sendMockNotification,
-    products
+    products,
+    inventoryAlerts,
+    inventorySummary
   } = useApp();
 
   const [lineActive, setLineActive] = useState(true);
   const [emailActive, setEmailActive] = useState(true);
   const [targetChannel, setTargetChannel] = useState<'LINE' | 'Email'>('LINE');
-  const [testSent, setTestSent] = useState(false);
+  const [testMessage, setTestMessage] = useState('');
 
   if (!isNotificationSettingsOpen) return null;
 
   const handleSendTestAlert = () => {
     const criticalProduct = products.find(p => p.status === 'Critical') || products[0];
+    if (!criticalProduct) {
+      setTestMessage('目前沒有商品，未新增示範紀錄。');
+      return;
+    }
     sendMockNotification(
       targetChannel,
-      `【倉管小幫手緊急補貨警報】${criticalProduct.name} 僅剩 ${criticalProduct.stock} 瓶！`,
-      `交期預估需 ${criticalProduct.leadTime} 天，依據每週耗用速度預計於 7 天內斷貨。請店長前往後台審核採購單。`
+      `【補貨情境示範】${criticalProduct.name} 現有 ${criticalProduct.stock} 瓶`,
+      `目前示範資料：週需求 ${criticalProduct.weeklyDemand}、補貨點 ${criticalProduct.reorderPoint}、交期 ${criticalProduct.leadTime} 天；本次只新增站內紀錄。`
     );
-    setTestSent(true);
-    setTimeout(() => setTestSent(false), 2000);
+    setTestMessage(`已新增 ${targetChannel} 站內示範紀錄，未實際發送。`);
   };
 
   return (
@@ -51,8 +56,8 @@ export const NotificationModal: React.FC = () => {
               <Bell size={16} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">倉管小幫手｜即時監控與自動補貨通知</h2>
-              <p className="text-xs text-slate-500">監控貨物動態，當庫存低於臨界點自動發送 LINE 與郵件預警。</p>
+              <h2 className="text-base font-bold text-slate-900">庫存警示與站內通知示範</h2>
+              <p className="text-xs text-slate-500">警示隨目前資料更新；LINE／Email 示範，未實際發送。通知及已讀狀態不保存，重新整理後回到初始示例。</p>
             </div>
           </div>
           <button
@@ -69,18 +74,19 @@ export const NotificationModal: React.FC = () => {
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
               <div>
-                <span className="font-bold text-emerald-950 block">即時貨物自動監控：運作中</span>
-                <span className="text-[11px] text-emerald-800">全店 100 SKUs 每秒比對庫存覆蓋天數 vs 供應商到貨前置期</span>
+                <span className="font-bold text-emerald-950 block">目前庫存警示：依共用規則計算</span>
+                <span className="text-[11px] text-emerald-800">全店 {inventorySummary.totalSkus} SKUs 依庫存、補貨點與週需求更新，非背景定時監控</span>
               </div>
             </div>
             <span className="text-[10px] font-mono font-bold bg-white text-emerald-800 px-2 py-1 rounded shadow-2xs">
-              24HR 守護
+              前端示範
             </span>
           </div>
 
           {/* Channels Toggle */}
           <div className="space-y-2">
-            <label className="font-semibold text-slate-700 block">自動發送警報管道配置：</label>
+            <p className="font-semibold text-slate-700">管道偏好示意（開關僅切換顯示，不控制發送）：</p>
+            <p className="text-[11px] text-slate-500">管道選擇暫存於本次系統展示，返回首頁或重新整理會重設；未串接外部服務或排程。</p>
             <div className="grid grid-cols-2 gap-3">
               <div 
                 onClick={() => setLineActive(!lineActive)}
@@ -91,8 +97,8 @@ export const NotificationModal: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Smartphone size={16} className="text-emerald-700" />
                   <div>
-                    <div className="font-bold text-slate-900">LINE Notify 官方群組</div>
-                    <div className="text-[10px] text-slate-500">推播至「店長與採購緊急通知群」</div>
+                    <div className="font-bold text-slate-900">LINE 管道示意</div>
+                    <div className="text-[10px] text-slate-500">{lineActive ? '示意開啟' : '示意關閉'}，未實際發送</div>
                   </div>
                 </div>
                 {lineActive && <Check size={16} className="text-emerald-700" />}
@@ -107,8 +113,8 @@ export const NotificationModal: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Mail size={16} className="text-emerald-700" />
                   <div>
-                    <div className="font-bold text-slate-900">門市營運電子信箱</div>
-                    <div className="text-[10px] text-slate-500">每日早上 08:00 發送晨間決策簡報</div>
+                    <div className="font-bold text-slate-900">Email 管道示意</div>
+                    <div className="text-[10px] text-slate-500">{emailActive ? '示意開啟' : '示意關閉'}，未實際發送</div>
                   </div>
                 </div>
                 {emailActive && <Check size={16} className="text-emerald-700" />}
@@ -119,7 +125,7 @@ export const NotificationModal: React.FC = () => {
           {/* Test Dispatch Tool */}
           <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-800">模擬發送補貨通知測試：</span>
+              <span className="font-semibold text-slate-800">新增站內示範紀錄：</span>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -143,32 +149,35 @@ export const NotificationModal: React.FC = () => {
             </div>
 
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              點選按鈕後，系統將依據目前現有庫存最緊迫之品項（如 5α捷利爾淨化液），模擬觸發自動補貨通知。
+              選用第一項危急商品，沒有危急商品時使用第一項商品。按下後只新增站內紀錄，不修改庫存、建立採購或對外寄送。
             </p>
 
             <button
               type="button"
               onClick={handleSendTestAlert}
+              disabled={products.length === 0}
               className="w-full py-2 bg-slate-900 hover:bg-black text-white rounded-lg font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              {testSent ? (
-                <>
-                  <CheckCircle2 size={14} className="text-emerald-400" />
-                  <span>已成功發送通知至 {targetChannel}！</span>
-                </>
-              ) : (
-                <>
-                  <Send size={14} />
-                  <span>立即模擬觸發 {targetChannel} 補貨警報</span>
-                </>
-              )}
+              <Send size={14} />
+              <span>新增 {targetChannel} 示範紀錄</span>
             </button>
+            <p role="status" aria-live="polite" className="min-h-4 text-[11px] text-slate-600">{testMessage}</p>
           </div>
 
-          {/* Recent Notification Feed */}
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <h3 className="font-semibold text-slate-800">目前庫存警示：{inventoryAlerts.length} 項（危急／低水位）</h3>
+            {inventoryAlerts.length === 0 ? <p>目前沒有危急或低水位商品。</p> : (
+              <ul className="space-y-1">
+                {inventoryAlerts.slice(0, 5).map(p => <li key={p.id}>{p.name}：現有 {p.stock}，補貨點 {p.reorderPoint}（{p.status === 'Critical' ? '危急' : '低水位'}）</li>)}
+              </ul>
+            )}
+            {inventoryAlerts.length > 5 && <p>顯示前 5 項，全部警示請至庫存頁查看。</p>}
+          </div>
+
+          {/* Historical events retain their event-time meaning after stock changes. */}
           <div className="space-y-2 pt-2 border-t border-slate-100">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-800">最新通知紀錄 ({notifications.length})</span>
+              <span className="font-semibold text-slate-800">站內歷史紀錄（含初始示例）({notifications.length})</span>
               <button
                 type="button"
                 onClick={markAllNotificationsRead}
@@ -190,6 +199,7 @@ export const NotificationModal: React.FC = () => {
                     <span className="font-bold text-slate-900 font-sans">{n.title}</span>
                     <span className="text-[10px] text-slate-400 font-mono">{n.timestamp}</span>
                   </div>
+                  <p className="text-[10px] text-slate-500 font-sans">{n.channel === 'System' ? '站內紀錄' : `${n.channel} 示範，未實際發送`}{n.isRead ? ' · 已讀' : ' · 未讀'}</p>
                   <p className="text-[11px] text-slate-600 font-sans leading-relaxed">{n.message}</p>
                 </div>
               ))}

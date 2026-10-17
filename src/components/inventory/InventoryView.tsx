@@ -14,6 +14,7 @@ import {
   Layers,
   ArrowRight
 } from 'lucide-react';
+import { coverage, formatCoverage } from '../../utils/inventoryCalculations';
 import { ProductDetailModal } from '../products/ProductDetailModal';
 
 export const InventoryView: React.FC = () => {
@@ -59,8 +60,11 @@ export const InventoryView: React.FC = () => {
         valA = a.stock;
         valB = b.stock;
       } else if (sortBy === 'coverage') {
-        valA = a.stock / (a.weeklyDemand || 1);
-        valB = b.stock / (b.weeklyDemand || 1);
+        const aCoverage = coverage(a.stock, a.weeklyDemand);
+        const bCoverage = coverage(b.stock, b.weeklyDemand);
+        if (aCoverage === null || bCoverage === null) return aCoverage === bCoverage ? 0 : aCoverage === null ? 1 : -1;
+        valA = aCoverage;
+        valB = bCoverage;
       } else if (sortBy === 'demand') {
         valA = a.weeklyDemand;
         valB = b.weeklyDemand;
@@ -96,7 +100,7 @@ export const InventoryView: React.FC = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">門市即時庫存動態表</h1>
           <p className="text-xs text-slate-500 mt-1">
-            即時監控全店 100 項沙龍專業與零售產品，自動估算安全天數，提供現場設計師領料與補貨指引。
+            依目前示範資料顯示全店 {products.length} 項產品；庫存異動後即更新，覆蓋天數依庫存與需求參數試算。
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -133,7 +137,8 @@ export const InventoryView: React.FC = () => {
             )}
           </div>
 
-          {/* Quick Status Filter Tabs */}
+          {/* Quick Status Filter Tabs: whole-store counts, independent of filters */}
+          <span className="text-[11px] text-slate-500 self-center">全店狀態數：</span>
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs overflow-x-auto">
             {[
               { id: 'ALL', label: '全部' },
@@ -171,7 +176,7 @@ export const InventoryView: React.FC = () => {
               onChange={(e) => setSelectedBrand(e.target.value)}
               className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
             >
-              <option value="ALL">全部 8 個品牌</option>
+              <option value="ALL">全部 {brands.length} 個品牌</option>
               {brands.map(b => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
@@ -185,7 +190,7 @@ export const InventoryView: React.FC = () => {
               onChange={(e) => setSelectedSupplier(e.target.value)}
               className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
             >
-              <option value="ALL">全部 5 家供應商</option>
+              <option value="ALL">全部 {suppliers.length} 家供應商</option>
               {suppliers.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
@@ -256,7 +261,7 @@ export const InventoryView: React.FC = () => {
                 </tr>
               ) : (
                 filteredProducts.map(p => {
-                  const coverageWeeks = (p.stock / (p.weeklyDemand || 1)).toFixed(1);
+                  const coverageWeeks = formatCoverage(p.stock, p.weeklyDemand, '週');
                   const isStockoutRisk = p.status === 'Critical';
 
                   return (
@@ -317,10 +322,11 @@ export const InventoryView: React.FC = () => {
                       {/* Coverage (Weeks) */}
                       <td className="py-3.5 px-4 text-center font-mono">
                         <span className={`font-medium ${
-                          parseFloat(coverageWeeks) < 2 ? 'text-rose-600 font-bold' : 
-                          parseFloat(coverageWeeks) > 12 ? 'text-purple-600 font-bold' : 'text-slate-700'
+                          p.status === 'Critical' ? 'text-rose-600 font-bold' :
+                          p.status === 'Low' ? 'text-amber-700 font-bold' :
+                          p.status === 'Overstock' ? 'text-purple-600 font-bold' : 'text-slate-700'
                         }`}>
-                          {coverageWeeks} 週
+                          {coverageWeeks}
                         </span>
                       </td>
 
@@ -357,7 +363,7 @@ export const InventoryView: React.FC = () => {
             共顯示 <strong className="text-slate-800 font-mono">{filteredProducts.length}</strong> 項商品 (總品項 {products.length})
           </span>
           <span className="text-[11px] text-slate-600">
-            點擊任一列即可開啟「出入庫帳本」與「AI 決策診斷」
+            點擊任一列即可開啟「出入庫帳本」與「庫存規則與需求試算」
           </span>
         </div>
       </div>

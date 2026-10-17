@@ -27,7 +27,7 @@ export const Sidebar: React.FC = () => {
       id: 'dashboard',
       label: '總覽儀表板',
       icon: LayoutDashboard,
-      badge: criticalIssuesCount > 0 ? `${criticalIssuesCount} 警示` : undefined,
+      badge: criticalIssuesCount > 0 ? `${criticalIssuesCount} 危急` : undefined,
       badgeColor: 'text-rose-600 bg-rose-50'
     },
     {
@@ -51,9 +51,9 @@ export const Sidebar: React.FC = () => {
     },
     {
       id: 'insights',
-      label: 'AI 決策建議',
+      label: 'AI 建議示範',
       icon: BrainCircuit,
-      badge: pendingInsightsCount > 0 ? `${pendingInsightsCount} 新建議` : undefined,
+      badge: pendingInsightsCount > 0 ? `${pendingInsightsCount} 待處理` : undefined,
       badgeColor: 'text-emerald-800 bg-emerald-100 font-semibold'
     },
     {
@@ -76,7 +76,7 @@ export const Sidebar: React.FC = () => {
     },
     {
       id: 'users',
-      label: '人員角色權限',
+      label: '人員與角色示範',
       icon: Users
     }
   ];

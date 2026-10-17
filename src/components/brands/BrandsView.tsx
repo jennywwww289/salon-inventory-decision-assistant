@@ -87,7 +87,7 @@ export const BrandsView: React.FC = () => {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">品牌營運績效與比較</h1>
           <p className="text-xs text-slate-500 mt-1">
-            以客觀商業數據（營收貢獻、庫存總值、週轉次數、缺貨與積壓比率）橫向評估 8 大主力品牌。
+            SKU、庫存成本與狀態依目前示範資料更新；成長率為固定示意，月需求金額與週轉為公式試算，非實際營收。
           </p>
         </div>
         <button
@@ -117,7 +117,7 @@ export const BrandsView: React.FC = () => {
                     isTrendPositive ? 'text-emerald-700' : 'text-rose-600'
                   }`}>
                     {isTrendPositive ? <TrendingUp size={14} className="mr-0.5" /> : <TrendingDown size={14} className="mr-0.5" />}
-                    <span>{isTrendPositive ? '+' : ''}{Math.round(stat.trend * 100)}%</span>
+                    <span>成長示意 {isTrendPositive ? '+' : ''}{Math.round(stat.trend * 100)}%</span>
                   </div>
                 </div>
 
@@ -127,19 +127,19 @@ export const BrandsView: React.FC = () => {
                 {/* Metrics Breakdown */}
                 <div className="space-y-2 bg-slate-50/80 p-3 rounded-xl text-xs font-mono mb-4 border border-slate-100">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 font-sans">預估月營收：</span>
+                    <span className="text-slate-600 font-sans">月需求金額試算：</span>
                     <span className="font-bold text-slate-900">
                       NT$ {Math.round(stat.estimatedMonthlyRevenue).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 font-sans">在庫庫存價值：</span>
+                    <span className="text-slate-600 font-sans">庫存成本金額：</span>
                     <span className="font-bold text-slate-800">
                       NT$ {stat.totalInventoryValue.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 font-sans">年庫存週轉率：</span>
+                    <span className="text-slate-600 font-sans">年週轉試算：</span>
                     <span className="font-bold text-emerald-800">
                       {stat.turnoverRate} 次/年
                     </span>
@@ -183,8 +183,8 @@ export const BrandsView: React.FC = () => {
       {/* 3. Comparative Evaluation Table */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
         <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="text-sm font-bold text-slate-900">全品牌客觀指標對照表 (Measurable Business Matrix)</h2>
-          <p className="text-xs text-slate-500">不給予主觀評級，忠實呈現資金沉澱與動態流速</p>
+          <h2 className="text-sm font-bold text-slate-900">品牌資料與試算對照</h2>
+          <p className="text-xs text-slate-500">月需求金額＝Σ（週需求×售價）×4.3；年週轉＝Σ（週需求×成本）×52÷目前庫存成本（分母為 0 時顯示 0.0）。成長率是固定示例。</p>
         </div>
 
         <div className="overflow-x-auto">
@@ -193,10 +193,10 @@ export const BrandsView: React.FC = () => {
               <tr>
                 <th className="py-3 px-4 font-sans">品牌名稱</th>
                 <th className="py-3 px-4 text-center">SKU 數</th>
-                <th className="py-3 px-4 text-right">在庫庫存價值</th>
-                <th className="py-3 px-4 text-right">預估月營收</th>
-                <th className="py-3 px-4 text-center">銷售成長率</th>
-                <th className="py-3 px-4 text-center">庫存週轉次數</th>
+                <th className="py-3 px-4 text-right">庫存成本金額</th>
+                <th className="py-3 px-4 text-right">月需求金額試算</th>
+                <th className="py-3 px-4 text-center">成長率示意（固定）</th>
+                <th className="py-3 px-4 text-center">年週轉試算</th>
                 <th className="py-3 px-4 text-center">斷貨品項</th>
                 <th className="py-3 px-4 text-center">積壓品項</th>
               </tr>

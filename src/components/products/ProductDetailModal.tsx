@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Product, TransactionType } from '../../types';
+import { Product, TransactionType, ReturnDirection } from '../../types';
+import { formatCoverage, sortTransactions, formatNumber, formatGrossMargin } from '../../utils/inventoryCalculations';
+import { formatValidationErrors, parseNumericInput, validatePositiveQuantity, validateSignedQuantity, OUTBOUND_TRANSACTION_TYPES } from '../../utils/validation';
 import { 
   X, 
   Clock, 
@@ -23,8 +25,9 @@ interface Props {
   onClose: () => void;
 }
 
-export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
+export const ProductDetailModal: React.FC<Props> = ({ product: selectedProduct, onClose }) => {
   const { 
+    products,
     transactions, 
     recordTransaction, 
     currentUser, 
@@ -37,36 +40,56 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
   
   // Quick ledger entry state
   const [adjustType, setAdjustType] = useState<TransactionType>('Service Usage');
-  const [adjustQty, setAdjustQty] = useState<number>(1);
+  const [returnDirection, setReturnDirection] = useState<ReturnDirection | ''>('');
+  const [adjustQty, setAdjustQty] = useState('1');
   const [serviceName, setServiceName] = useState('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const product = products.find(p => p.id === selectedProduct.id);
+  if (!product) return <div role="alert" className="p-4 bg-white">商品不存在。<button type="button" onClick={onClose}>關閉</button></div>;
 
   // Filter transactions for this specific product
-  const productTransactions = transactions.filter(t => t.productId === product.id);
+  const productTransactions = sortTransactions(transactions.filter(t => t.productId === product.id));
 
   // Related insight
   const relatedInsight = insights.find(i => i.productId === product.id);
 
-  const coverageWeeks = (product.stock / (product.weeklyDemand || 1)).toFixed(1);
-  const coverageMonths = (product.stock / (product.monthlyDemand || 1)).toFixed(1);
+  const coverageWeeks = formatCoverage(product.stock, product.weeklyDemand, '週');
+  const coverageMonths = formatCoverage(product.stock, product.monthlyDemand, '個月');
 
   const handleRecordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const rawQuantity = parseNumericInput(adjustQty);
+    const quantity = adjustType === 'Inventory Adjustment'
+      ? validateSignedQuantity(rawQuantity, '盤點調整數量')
+      : validatePositiveQuantity(rawQuantity, '輸入數量');
+    if (quantity.ok === false) {
+      setError(formatValidationErrors(quantity.errors));
+      return;
+    }
     setIsSubmitting(true);
 
-    const isOutbound = ['Service Usage', 'Staff Usage', 'Sale', 'Damage / Loss'].includes(adjustType);
-    const qtyValue = isOutbound ? -Math.abs(adjustQty) : Math.abs(adjustQty);
+    const isOutbound = OUTBOUND_TRANSACTION_TYPES.includes(adjustType)
+      || (adjustType === 'Return' && returnDirection === 'To Supplier');
+    const qtyValue = isOutbound ? -quantity.value : quantity.value;
 
-    recordTransaction({
+    const result = recordTransaction({
       productId: product.id,
       type: adjustType,
+      returnDirection: adjustType === 'Return' ? returnDirection || undefined : undefined,
       quantity: qtyValue,
       serviceType: serviceName || undefined,
       note: note || undefined
     });
 
     setIsSubmitting(false);
+    if (result.ok === false) {
+      setError(formatValidationErrors(result.errors));
+      return;
+    }
+    setError('');
     setNote('');
     setServiceName('');
     setModalTab('ledger');
@@ -74,7 +97,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
 
   const handleCreatePOFromModal = () => {
     const qty = Math.max(product.moq, Math.round(product.weeklyDemand * 4));
-    createPurchaseOrder({
+    const result = createPurchaseOrder({
       supplierId: product.supplierId,
       items: [{
         productId: product.id,
@@ -82,10 +105,15 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
         unitCost: product.unitCost
       }],
       expectedDeliveryDate: new Date(Date.now() + product.leadTime * 86400000).toISOString().split('T')[0],
-      notes: `由商品明細頁面快速發起補貨，補足 4 週安全用量。`,
+      notes: `由商品明細手動建立採購草稿；數量取 MOQ 與週需求乘 4 四捨五入的較大值。`,
       isAiAssisted: true,
       aiRationale: `現有庫存 ${product.stock}，補貨點 ${product.reorderPoint}，交期 ${product.leadTime} 天。`
     });
+    if (result.ok === false) {
+      setError(formatValidationErrors(result.errors));
+      return;
+    }
+    setError('');
     onClose();
     setActiveTab('purchase');
   };
@@ -128,9 +156,9 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
           <div className="bg-white p-2.5 rounded-xl border border-emerald-950/10">
             <span className="text-slate-400 text-[11px] block">安全庫存覆蓋</span>
             <span className="text-xl font-bold text-slate-900">
-              {coverageWeeks} <span className="text-xs font-normal text-slate-500">週</span>
+              {coverageWeeks}
             </span>
-            <span className="text-[10px] text-slate-400 block font-sans">約 {coverageMonths} 個月</span>
+            <span className="text-[10px] text-slate-400 block font-sans">{coverageMonths}</span>
           </div>
 
           <div className="bg-white p-2.5 rounded-xl border border-emerald-950/10">
@@ -147,7 +175,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
               NT$ {product.unitCost} / {product.sellingPrice}
             </span>
             <span className="text-[10px] text-emerald-700 block font-sans font-semibold">
-              毛利 {Math.round(((product.sellingPrice - product.unitCost) / product.sellingPrice) * 100)}%
+              毛利率：{formatGrossMargin(product.unitCost, product.sellingPrice)}
             </span>
           </div>
         </div>
@@ -187,10 +215,11 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
             }`}
           >
             <BrainCircuit size={14} />
-            <span>決策分析與預測 (What & Why)</span>
+            <span>庫存規則與需求試算</span>
           </button>
         </div>
 
+        {error && <p role="alert" className="px-5 py-2 text-sm text-rose-700">{error}</p>}
         {/* Tab Content */}
         <div className="p-5 overflow-y-auto flex-1">
           {/* TAB 1: LEDGER */}
@@ -221,6 +250,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                         <th className="py-2.5 px-3 text-right">數量</th>
                         <th className="py-2.5 px-3">經手人</th>
                         <th className="py-2.5 px-3 text-right">異動後庫存</th>
+                        <th className="py-2.5 px-3 text-right">異動時單位成本</th>
                         <th className="py-2.5 px-3">服務項目 / 備註</th>
                       </tr>
                     </thead>
@@ -233,7 +263,12 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                               {tx.timestamp}
                             </td>
                             <td className="py-2.5 px-3">
-                              <span className="font-semibold text-slate-800">{tx.type}</span>
+                              <span className="font-semibold text-slate-800">
+                                {tx.type === 'Return'
+                                  ? tx.returnDirection === 'To Supplier' ? '退回供應商'
+                                    : tx.returnDirection === 'From Customer' ? '顧客退回商品' : '退貨（方向未記錄）'
+                                  : tx.type}
+                              </span>
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-bold">
                               <span className={isPositive ? 'text-emerald-700' : 'text-rose-600'}>
@@ -245,6 +280,9 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-800">
                               {tx.resultingStock}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono">
+                              {tx.unitCost === undefined ? '未記錄' : `NT$ ${formatNumber(tx.unitCost)}`}
                             </td>
                             <td className="py-2.5 px-3 text-slate-500 text-[11px]">
                               {tx.serviceType && (
@@ -284,18 +322,37 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                   <option value="Purchase">採購入庫 (增加)</option>
                   <option value="Inventory Adjustment">盤點校正調整</option>
                   <option value="Damage / Loss">破損耗損報廢</option>
+                  <option value="Return">退貨處理（選擇方向）</option>
                 </select>
               </div>
+
+              {adjustType === 'Return' && (
+                <div>
+                  <label htmlFor="return-direction" className="block text-slate-700 font-semibold mb-1">退貨方向</label>
+                  <select
+                    id="return-direction"
+                    value={returnDirection}
+                    onChange={(e) => setReturnDirection(e.target.value as ReturnDirection | '')}
+                    className="w-full bg-white border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-emerald-700"
+                    required
+                  >
+                    <option value="">請選擇退貨方向</option>
+                    <option value="To Supplier">退回供應商（扣除庫存）</option>
+                    <option value="From Customer">顧客退回商品（增加庫存）</option>
+                  </select>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">數量 ({product.spec})</label>
+                  <p className="text-[11px] text-slate-500 mb-1">盤點調整：正數增加、負數減少；其他類型請輸入正數。</p>
                   <input
                     type="number"
-                    min="1"
+                    min={adjustType === 'Inventory Adjustment' ? undefined : 1}
                     max="999"
                     value={adjustQty}
-                    onChange={(e) => setAdjustQty(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setAdjustQty(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-lg p-2 font-mono font-bold text-slate-800 focus:ring-1 focus:ring-emerald-700"
                     required
                   />
@@ -360,7 +417,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
               <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-4">
                 <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
                   <BrainCircuit size={17} />
-                  <span>四維商業決策診斷 (WHAT · WHY · WHAT NEXT · ACTION)</span>
+                  <span>依目前示範資料與既有公式試算，非 AI 預測</span>
                 </div>
 
                 <div className="space-y-3 divide-y divide-emerald-200/50">
@@ -371,7 +428,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                     </span>
                     <p className="text-slate-700 leading-relaxed">
                       目前現有庫存為 <strong className="font-mono">{product.stock}</strong> 瓶，安全補貨點為 <strong className="font-mono">{product.reorderPoint}</strong> 瓶。
-                      近 4 週平均每週消耗量為 <strong className="font-mono">{product.weeklyDemand}</strong> 瓶，
+                      示範每週需求參數為 <strong className="font-mono">{product.weeklyDemand}</strong> 瓶，
                       庫存狀態經判定為：<strong className="text-emerald-900 font-semibold">{product.status}</strong>。
                     </p>
                   </div>
@@ -379,28 +436,20 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                   {/* 2. Why did it happen? */}
                   <div className="pt-2">
                     <span className="font-bold text-slate-900 text-xs block mb-0.5">
-                      2. 為什麼會發生？ (Why did it happen?)
+                      2. 庫存狀態的規則依據
                     </span>
                     <p className="text-slate-700 leading-relaxed">
-                      {product.status === 'Critical'
-                        ? `近兩週門市頭皮護理療程預約量增加，且週末客人零售帶走率提升，導致庫存消耗速度快於原本供應商訂貨週期。`
-                        : product.status === 'Overstock'
-                        ? `上季初預期夏季需求激增而一次性採購過多，但後續因顧客偏好轉移，實際每週需求僅 ${product.weeklyDemand} 瓶，造成庫存積壓。`
-                        : `銷售量與店內耗用速度平穩，進銷存比例維持在安全基準線內。`}
+                      {product.statusReason ?? '依目前庫存、補貨點與週需求的共用規則分類；未分析預約量或顧客行為。'}
                     </p>
                   </div>
 
                   {/* 3. What might happen next? */}
                   <div className="pt-2">
                     <span className="font-bold text-slate-900 text-xs block mb-0.5">
-                      3. 接下來可能發生什麼？ (What might happen next?)
+                      3. 需求維持不變時的覆蓋量試算
                     </span>
                     <p className="text-slate-700 leading-relaxed">
-                      {product.status === 'Critical'
-                        ? `預估在 ${coverageWeeks} 週（約 ${Math.round(parseFloat(coverageWeeks) * 7)} 天）內庫存將徹底歸零。而供應商前置期需 ${product.leadTime} 天，若未在本週完成下單，必然面臨空窗斷貨。`
-                        : product.status === 'Overstock'
-                        ? `預估現有存貨需 ${coverageMonths} 個月才能消化完畢。若不採取促銷加價購去化，將面臨效期折損與資金卡死約 NT$ ${(product.stock * product.unitCost).toLocaleString()}。`
-                        : `預估未來 30 天需求平穩在 ${product.monthlyDemand} 瓶左右，可按常規補貨週期於下月發起採購。`}
+                      以庫存除以示範需求參數：週覆蓋 {coverageWeeks}、月覆蓋 {coverageMonths}；供應商交期參數 {product.leadTime} 天。此為公式試算，不保證實際需求或到貨時間。
                     </p>
                   </div>
 
@@ -410,10 +459,10 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                       4. 我能採取什麼行動？ (What can I do?)
                     </span>
                     <p className="text-slate-700 leading-relaxed mb-3">
-                      {product.status === 'Critical'
-                        ? `建議立即採購至少 ${Math.max(product.moq, Math.round(product.weeklyDemand * 3))} 瓶，滿足 MOQ (${product.moq}) 門檻並建立 3~4 週緩衝。`
+                      {product.weeklyDemand === 0 ? '目前無需求資料，無法估算用盡時間。' : product.status === 'Critical' || product.status === 'Low'
+                        ? `建立草稿時數量為 ${Math.max(product.moq, Math.round(product.weeklyDemand * 4))} 瓶，取 MOQ (${product.moq}) 與週需求乘 4 四捨五入的較大值。這是既有補貨公式，非 AI 推薦或實際下單。`
                         : product.status === 'Overstock'
-                        ? `建議：① 暫停採購；② 搭配洗護套裝做折扣優惠；③ 撥充店內做客人免費體驗試用品。`
+                        ? `去化情境示意：暫停採購、搭配套裝或提供體驗；未驗證成效，也不會自動執行。`
                         : `目前無需緊急操作，保持每週定期檢視即可。`}
                     </p>
 
@@ -423,7 +472,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                         className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                       >
                         <ShoppingCart size={15} />
-                        <span>採納建議：立即發起採購單</span>
+                        <span>依公式建立採購草稿</span>
                       </button>
                     ) : null}
                   </div>
@@ -450,7 +499,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
               className="px-4 py-2 text-xs font-semibold bg-slate-900 hover:bg-black text-white rounded-lg shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <ShoppingCart size={15} />
-              <span>以此商品建立採購單</span>
+              <span>以此商品建立採購草稿</span>
             </button>
           </div>
         </div>

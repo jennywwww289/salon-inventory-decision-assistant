@@ -50,7 +50,7 @@ export const ProductsView: React.FC = () => {
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">商品品項檔案庫 (100 SKUs)</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">商品品項檔案庫 ({products.length} SKUs)</h1>
           <p className="text-xs text-slate-500 mt-1">
             維護全店商品基本檔、進貨價、門市售價、包裝規格、安全補貨點與對應供應商。
           </p>
@@ -114,7 +114,6 @@ export const ProductsView: React.FC = () => {
       {/* 3. Product Catalog Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredProducts.map(p => {
-          const margin = Math.round(((p.sellingPrice - p.unitCost) / p.sellingPrice) * 100);
 
           return (
             <div

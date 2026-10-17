@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { formatCoverage, sortTransactions, formatNumber } from '../../utils/inventoryCalculations';
 import { useApp } from '../../context/AppContext';
+import { formatValidationErrors } from '../../utils/validation';
 import { 
   AlertTriangle, 
   TrendingUp, 
@@ -23,7 +25,9 @@ export const DashboardView: React.FC = () => {
   const { 
     currentUser, 
     inventorySummary, 
-    products, 
+    products,
+    brands,
+    suppliers,
     insights, 
     transactions, 
     setActiveTab, 
@@ -31,6 +35,7 @@ export const DashboardView: React.FC = () => {
     setIsServiceUsageModalOpen,
     createPurchaseOrder
   } = useApp();
+  const [error, setError] = useState('');
 
   // Find the top 3 brief items (Critical, Overstock, Promotion)
   const criticalInsight = insights.find(i => i.severity === 'Critical') || insights[0];
@@ -38,20 +43,20 @@ export const DashboardView: React.FC = () => {
   const promoInsight = insights.find(i => i.type === 'Promotion') || insights[2];
 
   // Specific product for critical insight
-  const criticalProduct = products.find(p => p.id === (criticalInsight?.productId || 'prod-1'));
-  const overstockProduct = products.find(p => p.id === (overstockInsight?.productId || 'prod-7'));
+  const criticalProduct = products.find(p => p.id === criticalInsight?.productId);
+  const overstockProduct = products.find(p => p.id === overstockInsight?.productId);
 
   // Quick Action to generate PO from critical insight
   const handleQuickCreatePO = (e: React.MouseEvent, productId?: string) => {
     e.stopPropagation();
     if (!productId) {
-      setActiveTab('purchase');
+      setError('請選擇存在的補貨商品。');
       return;
     }
     const targetProduct = products.find(p => p.id === productId);
     if (targetProduct) {
       const orderQty = Math.max(targetProduct.moq, Math.round(targetProduct.weeklyDemand * 3));
-      createPurchaseOrder({
+      const result = createPurchaseOrder({
         supplierId: targetProduct.supplierId,
         items: [{
           productId: targetProduct.id,
@@ -59,16 +64,24 @@ export const DashboardView: React.FC = () => {
           unitCost: targetProduct.unitCost
         }],
         expectedDeliveryDate: new Date(Date.now() + targetProduct.leadTime * 86400000).toISOString().split('T')[0],
-        notes: `由今日營運摘要緊急補貨建議自動生成`,
+        notes: `由示範摘要手動建立採購草稿；數量取 MOQ 與週需求乘 3 四捨五入的較大值。`,
         isAiAssisted: true,
         aiRationale: `庫存量僅剩 ${targetProduct.stock}，週需求 ${targetProduct.weeklyDemand}，供應商交期 ${targetProduct.leadTime} 天。`
       });
+      if (result.ok === false) {
+        setError(formatValidationErrors(result.errors));
+        return;
+      }
+      setError('');
       setActiveTab('purchase');
+    } else {
+      setError('補貨商品不存在，請重新選擇商品。');
     }
   };
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12 animate-in fade-in duration-300">
+      {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
       {/* 1. Header Greeting & Tone */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
@@ -76,7 +89,7 @@ export const DashboardView: React.FC = () => {
             早安，{currentUser.name}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            這是今天沙龍門市最需要您關注與決策的 3 個營運事項，所有數據均與現場動態即時同步。
+            庫存數值與帳本依目前示範資料更新；以下三則建議及促銷為固定情境，不代表門市連線或即時 AI 分析。
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -91,7 +104,7 @@ export const DashboardView: React.FC = () => {
             onClick={() => setActiveTab('purchase')}
             className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <span>建立採購單</span>
+            <span>前往採購頁</span>
           </button>
         </div>
       </div>
@@ -101,9 +114,9 @@ export const DashboardView: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-            <h2 className="text-sm font-bold text-slate-800 tracking-wider">今日營運決策摘要 (TODAY'S BUSINESS BRIEF)</h2>
+            <h2 className="text-sm font-bold text-slate-800 tracking-wider">營運建議情境示範</h2>
           </div>
-          <span className="text-xs text-slate-600 font-mono">系統即時演算診斷</span>
+          <span className="text-xs text-slate-600 font-mono">商品數值隨資料更新；診斷與效益文字固定</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -120,14 +133,14 @@ export const DashboardView: React.FC = () => {
               </div>
 
               <h3 className="text-base font-bold text-slate-900 mb-1">
-                {criticalProduct ? criticalProduct.name : '5α捷利爾頭皮淨化液 (日常款)'}
+                {criticalProduct?.name ?? '尚無對應商品'}
               </h3>
               <p className="text-xs text-slate-500 mb-4">
-                <span>{criticalProduct?.brandName || 'AROMASE 艾瑪絲'}</span>
+                <span>{criticalProduct?.brandName ?? '—'}</span>
                 <span className="mx-1">·</span>
-                <span className="font-mono">{criticalProduct?.sku || 'ARM-001'}</span>
+                <span className="font-mono">{criticalProduct?.sku ?? '—'}</span>
                 <span className="mx-1">·</span>
-                <span>{criticalProduct?.spec || '260ml'}</span>
+                <span>{criticalProduct?.spec ?? '—'}</span>
               </p>
 
               {/* Data signals */}
@@ -135,29 +148,29 @@ export const DashboardView: React.FC = () => {
                 <div>
                   <span className="text-slate-500 block text-[11px]">現有庫存</span>
                   <span className="font-bold text-rose-700 text-sm">
-                    {criticalProduct?.stock || 12} 瓶
+                    {criticalProduct?.stock ?? '—'} 瓶
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">每週平均需求</span>
                   <span className="font-bold text-slate-800 text-sm">
-                    {criticalProduct?.weeklyDemand || 11.2} 瓶
+                    {criticalProduct?.weeklyDemand ?? '—'} 瓶
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">預估剩餘天數</span>
-                  <span className="font-bold text-rose-600 text-sm">約 7.5 天</span>
+                  <span className="font-bold text-rose-600 text-sm">{criticalProduct ? formatCoverage(criticalProduct.stock, criticalProduct.weeklyDemand, '天', 7) : '無法估算'}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">供應商交期 / MOQ</span>
                   <span className="font-bold text-slate-800 text-sm">
-                    {criticalProduct?.leadTime || 14} 天 / {criticalProduct?.moq || 20} 瓶
+                    {criticalProduct?.leadTime ?? '—'} 天 / {criticalProduct?.moq ?? '—'} 瓶
                   </span>
                 </div>
               </div>
 
               <p className="text-xs text-slate-700 leading-relaxed mb-4">
-                <strong>現況診斷：</strong>
+                <strong>固定情境示意：</strong>
                 依據近 4 週消耗速度，現有庫存無法支撐至供應商下次送達。下週店內做客人水療療程將面臨斷貨。
               </p>
             </div>
@@ -168,12 +181,14 @@ export const DashboardView: React.FC = () => {
                 onClick={(e) => handleQuickCreatePO(e, criticalProduct?.id)}
                 className="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <span>建立採購單 (建議訂購 30 瓶)</span>
+                <span>建立採購草稿（{criticalProduct ? Math.max(criticalProduct.moq, Math.round(criticalProduct.weeklyDemand * 3)) : '—'} 瓶）</span>
                 <ArrowRight size={14} />
               </button>
               <button
+                disabled={!criticalProduct}
                 onClick={() => {
-                  setSelectedProductId(criticalProduct?.id || 'prod-1');
+                  if (!criticalProduct) return;
+                  setSelectedProductId(criticalProduct.id);
                   setActiveTab('inventory');
                 }}
                 className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors cursor-pointer"
@@ -196,12 +211,12 @@ export const DashboardView: React.FC = () => {
               </div>
 
               <h3 className="text-base font-bold text-slate-900 mb-1">
-                {overstockProduct ? overstockProduct.name : '控油抗屑精華露 (頭皮噴霧)'}
+                {overstockProduct?.name ?? '尚無對應商品'}
               </h3>
               <p className="text-xs text-slate-500 mb-4">
-                <span>{overstockProduct?.brandName || 'AROMASE 艾瑪絲'}</span>
+                <span>{overstockProduct?.brandName ?? '—'}</span>
                 <span className="mx-1">·</span>
-                <span className="font-mono">{overstockProduct?.sku || 'ARM-007'}</span>
+                <span className="font-mono">{overstockProduct?.sku ?? '—'}</span>
               </p>
 
               {/* Data signals */}
@@ -209,29 +224,29 @@ export const DashboardView: React.FC = () => {
                 <div>
                   <span className="text-slate-500 block text-[11px]">現有庫存</span>
                   <span className="font-bold text-amber-900 text-sm">
-                    {overstockProduct?.stock || 84} 瓶
+                    {overstockProduct?.stock ?? '—'} 瓶
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">平均月需求</span>
                   <span className="font-bold text-slate-800 text-sm">
-                    {overstockProduct?.monthlyDemand || 13.5} 瓶
+                    {overstockProduct?.monthlyDemand ?? '—'} 瓶
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">庫存覆蓋時間</span>
-                  <span className="font-bold text-amber-800 text-sm">6.2 個月</span>
+                  <span className="font-bold text-amber-800 text-sm">{overstockProduct ? formatCoverage(overstockProduct.stock, overstockProduct.monthlyDemand, '個月') : '無法估算'}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">卡死資金成本</span>
                   <span className="font-bold text-slate-800 text-sm">
-                    NT$ {((overstockProduct?.stock || 84) * (overstockProduct?.unitCost || 380)).toLocaleString()}
+                    NT$ {overstockProduct ? formatNumber(overstockProduct.stock * overstockProduct.unitCost) : '—'}
                   </span>
                 </div>
               </div>
 
               <p className="text-xs text-slate-700 leading-relaxed mb-4">
-                <strong>現況診斷：</strong>
+                <strong>固定情境示意：</strong>
                 週轉速度比沙龍基準線慢 3.5 倍。上季過度進貨造成約 3 萬元現金流沉澱，建議暫停續叫並設計促銷套裝。
               </p>
             </div>
@@ -242,7 +257,7 @@ export const DashboardView: React.FC = () => {
                 onClick={() => setActiveTab('insights')}
                 className="w-full py-2 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <span>檢視 AI 去化建議與促銷方案</span>
+                <span>查看 AI 建議示範</span>
               </button>
               <button
                 onClick={() => setActiveTab('analytics')}
@@ -261,7 +276,7 @@ export const DashboardView: React.FC = () => {
                   03 — 採購商機 (PURCHASING OPPORTUNITY)
                 </span>
                 <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
-                  倒數 5 天
+                  固定促銷示例
                 </span>
               </div>
 
@@ -277,7 +292,7 @@ export const DashboardView: React.FC = () => {
               {/* Data signals */}
               <div className="grid grid-cols-2 gap-2 text-xs bg-white/80 p-3 rounded-xl border border-emerald-900/10 mb-4 font-mono">
                 <div>
-                  <span className="text-slate-500 block text-[11px]">促銷截止日</span>
+                  <span className="text-slate-500 block text-[11px]">示例截止日（非倒數）</span>
                   <span className="font-bold text-emerald-800 text-sm">10 月 15 日</span>
                 </div>
                 <div>
@@ -295,7 +310,7 @@ export const DashboardView: React.FC = () => {
               </div>
 
               <p className="text-xs text-slate-700 leading-relaxed mb-4">
-                <strong>商業效益：</strong>
+                <strong>固定效益示意（未驗證）：</strong>
                 剛好主力淨化液 ARM-001 即將斷貨，合併 ARM-002 大容量洗髮精一次下單 40 瓶，既可補足庫存又能省下單次進貨價差。
               </p>
             </div>
@@ -306,14 +321,14 @@ export const DashboardView: React.FC = () => {
                 onClick={() => setActiveTab('suppliers')}
                 className="w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <span>檢視促銷並試算訂單</span>
+                <span>前往供應商促銷示例</span>
                 <ArrowRight size={14} />
               </button>
               <button
                 onClick={() => setActiveTab('insights')}
                 className="w-full py-1.5 bg-white hover:bg-emerald-50 text-slate-700 border border-emerald-900/15 rounded-lg text-xs font-medium transition-colors cursor-pointer"
               >
-                查看 AI 採購效益試算
+                查看 AI 採購建議示範
               </button>
             </div>
           </div>
@@ -326,11 +341,11 @@ export const DashboardView: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-slate-900">門市庫存健康度總覽</h2>
             <p className="text-xs text-slate-500">
-              全店共管理 <span className="font-semibold text-slate-800 font-mono">100</span> 項品項，分布於 <span className="font-semibold text-slate-800 font-mono">8</span> 個品牌、<span className="font-semibold text-slate-800 font-mono">5</span> 家常規供應商
+              全店共管理 <span className="font-semibold text-slate-800 font-mono">{inventorySummary.totalSkus}</span> 項品項，分布於 <span className="font-semibold text-slate-800 font-mono">{brands.length}</span> 個品牌、<span className="font-semibold text-slate-800 font-mono">{suppliers.length}</span> 家常規供應商
             </p>
           </div>
           <div className="text-xs text-slate-600 font-mono">
-            總庫存價值 (進價)：NT$ <strong className="text-slate-800 font-bold">{inventorySummary.totalInventoryCost.toLocaleString()}</strong>
+            總庫存價值 (進價)：NT$ <strong className="text-slate-800 font-bold">{formatNumber(inventorySummary.totalInventoryCost)}</strong>
           </div>
         </div>
 
@@ -387,7 +402,7 @@ export const DashboardView: React.FC = () => {
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
             <span className="text-[11px] font-medium text-slate-500 block mb-1">總庫存件數</span>
             <div className="text-xl font-black text-slate-700 font-mono tabular-nums">
-              {inventorySummary.totalStockUnits}
+              {formatNumber(inventorySummary.totalStockUnits)}
               <span className="text-xs font-normal text-slate-500 ml-1">件</span>
             </div>
           </div>
@@ -401,7 +416,7 @@ export const DashboardView: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900">需立即排單補貨的商品 (CRITICAL LIST)</h3>
-              <p className="text-xs text-slate-500">預計於供應商前置期內耗盡的品項</p>
+              <p className="text-xs text-slate-500">依目前庫存、補貨點與週需求的共用規則判定；覆蓋量為試算</p>
             </div>
             <button
               onClick={() => setActiveTab('inventory')}
@@ -414,7 +429,7 @@ export const DashboardView: React.FC = () => {
 
           <div className="divide-y divide-slate-100">
             {products.filter(p => p.status === 'Critical').slice(0, 4).map(p => {
-              const coverageWeeks = (p.stock / (p.weeklyDemand || 1)).toFixed(1);
+              const coverageWeeks = formatCoverage(p.stock, p.weeklyDemand, '週');
               return (
                 <div key={p.id} className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 p-2 rounded-lg transition-colors">
                   <div>
@@ -431,7 +446,7 @@ export const DashboardView: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[11px] font-mono text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100 font-medium">
-                      僅剩 {coverageWeeks} 週
+                      {coverageWeeks}
                     </span>
                     <button
                       onClick={() => {
@@ -440,7 +455,7 @@ export const DashboardView: React.FC = () => {
                       }}
                       className="px-2.5 py-1 bg-slate-900 hover:bg-black text-white text-[11px] font-medium rounded transition-colors cursor-pointer"
                     >
-                      補貨
+                      查看商品
                     </button>
                   </div>
                 </div>
@@ -454,7 +469,7 @@ export const DashboardView: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900">最新出入庫異動帳本 (RECENT MOVEMENTS)</h3>
-              <p className="text-xs text-slate-500">門市即時登記紀錄，解決紙本零散記帳</p>
+              <p className="text-xs text-slate-500">目前示範資料的異動紀錄，含初始歷史示例</p>
             </div>
             <button
               onClick={() => setIsServiceUsageModalOpen(true)}
@@ -465,7 +480,7 @@ export const DashboardView: React.FC = () => {
           </div>
 
           <div className="divide-y divide-slate-100 font-mono text-xs">
-            {transactions.slice(0, 5).map(tx => {
+            {sortTransactions(transactions).slice(0, 5).map(tx => {
               const isPositive = tx.quantity > 0;
               return (
                 <div key={tx.id} className="py-2.5 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-2 rounded-lg transition-colors">

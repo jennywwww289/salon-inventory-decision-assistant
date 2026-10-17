@@ -45,18 +45,18 @@ export const UsersView: React.FC = () => {
     setIsAddUserOpen(false);
   };
 
-  const roleDescriptions: Record<Role, { desc: string; permissions: string[] }> = {
+  const roleDescriptions: Record<Role, { desc: string; responsibilities: string[] }> = {
     Owner: {
-      desc: '最高權限者：全系統決策、最終核准採購單、人員權限設定、商業營收分析。',
-      permissions: ['全功能讀寫', '採購單最終核准', '門市與供應商設定', 'AI 建議裁決與回饋']
+      desc: '職責情境：統籌採購、人員分工與營運資料檢視。',
+      responsibilities: ['採購規劃', '採購核准情境', '人員分工', '營運資料檢視']
     },
     Manager: {
       desc: '副店長 / 庫存主管：管理庫存異動、聯繫供應商、建立採購單草稿、查看數據分析。',
-      permissions: ['庫存與帳本管理', '供應商資料維護', '建立採購單草稿', '查看營運分析']
+      responsibilities: ['庫存與帳本管理', '供應商資料維護', '建立採購單草稿', '查看營運分析']
     },
     Staff: {
       desc: '現場美髮設計師 / 理療助理：查詢即時庫存、現場做客人快速領料登記、員工自用紀錄。',
-      permissions: ['即時庫存查閱', '現場領料與服務耗用登記', '員工樣品自用登記', '基本帳本明細']
+      responsibilities: ['目前庫存查閱', '現場領料與服務耗用登記', '員工樣品自用登記', '基本帳本明細']
     }
   };
 
@@ -65,10 +65,11 @@ export const UsersView: React.FC = () => {
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">門市人員與權限管理 (4 位預設)</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">人員與角色情境示範（{users.length} 位）</h1>
           <p className="text-xs text-slate-500 mt-1">
-            設定負責人 (Owner)、店主管 (Manager) 與沙龍美髮技師 (Staff) 職責分工與系統操作權限。
+            角色切換供操作情境展示，目前未提供登入驗證與權限隔離。
           </p>
+          <p className="text-xs text-slate-500 mt-1">切換會改變操作人顯示及後續紀錄的經手人；新增人員只建立目前的示範檔案，不會建立登入帳號。</p>
         </div>
         <button
           onClick={() => setIsAddUserOpen(true)}
@@ -140,9 +141,9 @@ export const UsersView: React.FC = () => {
                 {/* Permissions summary */}
                 <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-[11px] text-slate-600 space-y-1 mb-4">
                   <div className="font-semibold text-slate-700 text-[10px] uppercase tracking-wider mb-1">
-                    職能權限包含：
+                    角色職責示意（非權限限制）：
                   </div>
-                  {roleDescriptions[u.role]?.permissions.map((p, idx) => (
+                  {roleDescriptions[u.role]?.responsibilities.map((p, idx) => (
                     <div key={idx} className="flex items-center gap-1">
                       <span className="text-emerald-600">✓</span>
                       <span>{p}</span>
@@ -177,7 +178,7 @@ export const UsersView: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <h2 className="text-lg font-bold text-slate-900 mb-1">新增門市人員檔案</h2>
-            <p className="text-xs text-slate-500 mb-4">建立設計師、助理或店主管以利紀錄出入庫經手人。</p>
+            <p className="text-xs text-slate-500 mb-4">建立目前示範資料中的人員檔案，供選擇經手人；不是登入帳號，也不授予權限。</p>
 
             <form onSubmit={handleAddSubmit} className="space-y-4 text-xs">
               <div>
@@ -194,7 +195,7 @@ export const UsersView: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">角色權限</label>
+                  <label className="block text-slate-700 font-semibold mb-1">示範角色</label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as Role)}

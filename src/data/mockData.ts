@@ -2276,7 +2276,7 @@ export const INITIAL_TRANSACTIONS: InventoryTransaction[] = [
   },
   {
     id: 'tx-108',
-    productId: 'prod-43',
+    productId: 'prod-54',
     productName: '絲柔精華乳 (粗硬髮適用)',
     sku: 'MLB-001',
     type: 'Service Usage',
@@ -2383,7 +2383,7 @@ export const INITIAL_PURCHASE_ORDERS: PurchaseOrder[] = [
     status: 'Draft',
     items: [
       {
-        productId: 'prod-43',
+        productId: 'prod-54',
         productName: '絲柔精華乳 (粗硬髮適用)',
         sku: 'MLB-001',
         quantity: 20,
@@ -2398,7 +2398,7 @@ export const INITIAL_PURCHASE_ORDERS: PurchaseOrder[] = [
     createdByName: '莎拉 (Sarah)',
     createdAt: '2026-10-06',
     expectedDeliveryDate: '2026-10-13',
-    notes: '針對絲柔精華乳斷貨草稿，等待店長核准。',
+    notes: '針對絲柔精華乳斷貨的初始草稿示例，等待核准；未依角色限制。',
     isAiAssisted: true,
     aiRationale: '日系吹整熱門品項，即將觸底。'
   }
@@ -2477,7 +2477,7 @@ export const INITIAL_AI_INSIGHTS: AIInsight[] = [
     id: 'ins-4',
     type: 'Stockout',
     severity: 'Critical',
-    productId: 'prod-43',
+    productId: 'prod-54',
     productName: '絲柔精華乳 (粗硬髮適用)',
     brandName: 'Milbon 哥德式',
     title: '斷貨高風險：熱銷吹整乳庫存僅剩 10 瓶，支撐不足 10 天',
@@ -2489,7 +2489,7 @@ export const INITIAL_AI_INSIGHTS: AIInsight[] = [
       { label: '供應商交期', value: '7 天' }
     ],
     forecast: '若未在本週三前送單，下週五前將無精華乳可用，需降級替代使用其他造型品。',
-    recommendation: '已自動生成草稿 PO-2026-1003，建議採購 25 瓶。',
+    recommendation: '示範建議採購 25 瓶；點選「建立採購草稿」才會新增單據。',
     suggestedQty: 25,
     unitCost: 460,
     potentialImpact: '確保門市服務穩定，滿足 3.5 週常規消耗。',
@@ -2504,7 +2504,7 @@ export const INITIAL_NOTIFICATIONS: NotificationAlert[] = [
     timestamp: '2026-10-06 08:00',
     level: 'urgent',
     title: '【緊急補貨通知】5α捷利爾頭皮淨化液 庫存低於臨界點',
-    message: '商品 ARM-001 目前僅剩 12 瓶（前置期 14 天），已自動發送警報至 LINE 店長群組。',
+    message: '初始歷史示例：商品 ARM-001 庫存 12 瓶（前置期 14 天）；LINE 通知為示範，未實際發送。',
     productId: 'prod-1',
     isRead: false,
     channel: 'LINE'
@@ -2515,7 +2515,7 @@ export const INITIAL_NOTIFICATIONS: NotificationAlert[] = [
     level: 'urgent',
     title: '【緊急補貨通知】絲柔精華乳 (粗硬髮) 庫存告急',
     message: '商品 MLB-001 目前僅剩 10 瓶，日系代理交期 7 天，請立即核准採購單。',
-    productId: 'prod-43',
+    productId: 'prod-54',
     isRead: false,
     channel: 'LINE'
   },

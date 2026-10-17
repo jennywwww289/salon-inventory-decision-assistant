@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { X, Sparkles, Plus, CheckCircle2, Scissors, UserCheck } from 'lucide-react';
-import { TransactionType } from '../../types';
+import { InventoryTransaction, TransactionType } from '../../types';
+import { formatValidationErrors, parseNumericInput, validatePositiveQuantity } from '../../utils/validation';
 
 export const ServiceUsageModal: React.FC = () => {
   const { 
@@ -15,11 +16,13 @@ export const ServiceUsageModal: React.FC = () => {
 
   const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.id || '');
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
-  const [qty, setQty] = useState<number>(1);
+  const [qty, setQty] = useState('1');
   const [usageType, setUsageType] = useState<TransactionType>('Service Usage');
   const [serviceName, setServiceName] = useState('');
   const [note, setNote] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [completedMovement, setCompletedMovement] = useState<InventoryTransaction | null>(null);
 
   if (!isServiceUsageModalOpen) return null;
 
@@ -27,17 +30,25 @@ export const ServiceUsageModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!targetProduct) return;
-
-    recordTransaction({
-      productId: targetProduct.id,
+    const quantity = validatePositiveQuantity(parseNumericInput(qty));
+    if (quantity.ok === false) {
+      setError(formatValidationErrors(quantity.errors));
+      return;
+    }
+    const result = recordTransaction({
+      productId: selectedProductId,
       type: usageType,
-      quantity: -Math.abs(qty),
+      quantity: -quantity.value,
       serviceType: serviceName || (usageType === 'Service Usage' ? '沙龍日常美髮理療' : undefined),
       note: note || undefined,
       userId: selectedUserId
     });
-
+    if (result.ok === false) {
+      setError(formatValidationErrors(result.errors));
+      return;
+    }
+    setError('');
+    setCompletedMovement(result.value);
     setIsSuccess(true);
     setTimeout(() => {
       setIsSuccess(false);
@@ -75,11 +86,12 @@ export const ServiceUsageModal: React.FC = () => {
             </div>
             <h3 className="font-bold text-slate-900 text-sm">已成功扣除並寫入出入庫帳本！</h3>
             <p className="text-xs text-slate-500">
-              {targetProduct?.name} 目前剩餘：{Math.max(0, (targetProduct?.stock || 0) - qty)} {targetProduct?.spec}
+              {completedMovement?.productName} 目前剩餘：{completedMovement?.resultingStock} {targetProduct?.spec}
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {error && <p role="alert" className="text-rose-700">{error}</p>}
             {/* Staff who took the product */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -150,7 +162,7 @@ export const ServiceUsageModal: React.FC = () => {
                     min="1"
                     max={targetProduct ? targetProduct.stock : 99}
                     value={qty}
-                    onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setQty(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono font-bold text-slate-900 text-center text-sm"
                     required
                   />
@@ -159,9 +171,9 @@ export const ServiceUsageModal: React.FC = () => {
                       <button
                         key={q}
                         type="button"
-                        onClick={() => setQty(q)}
+                        onClick={() => setQty(String(q))}
                         className={`px-2.5 py-1.5 rounded border text-xs cursor-pointer ${
-                          qty === q ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          qty === String(q) ? 'bg-emerald-800 text-white font-bold' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                         }`}
                       >
                         {q}

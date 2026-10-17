@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Supplier } from '../../types';
+import { formatValidationErrors, parseNumericInput } from '../../utils/validation';
 import { 
   Truck, 
   Phone, 
@@ -25,29 +26,33 @@ export const SuppliersView: React.FC = () => {
   const [contactPerson, setContactPerson] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [moq, setMoq] = useState(15);
-  const [leadTime, setLeadTime] = useState(10);
+  const [moq, setMoq] = useState('15');
+  const [leadTime, setLeadTime] = useState('10');
   const [paymentTerms, setPaymentTerms] = useState('月結 30 天 (Net 30)');
   const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const [formError, setFormError] = useState('');
+  const [quickError, setQuickError] = useState('');
 
   const handleAddSupplierSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-
-    addSupplier({
+    const result = addSupplier({
       name: name.trim(),
       contactPerson,
       phone,
       email,
-      moq,
-      defaultLeadTime: leadTime,
+      moq: parseNumericInput(moq),
+      defaultLeadTime: parseNumericInput(leadTime),
       paymentTerms,
       suppliedBrandIds: selectedBrandIds,
       status: 'Active',
       notes
     });
-
+    if (result.ok === false) {
+      setFormError(formatValidationErrors(result.errors));
+      return;
+    }
+    setFormError('');
     // Reset
     setName('');
     setContactPerson('');
@@ -72,19 +77,24 @@ export const SuppliersView: React.FC = () => {
           unitCost: p.unitCost
         }));
 
-    createPurchaseOrder({
+    const result = createPurchaseOrder({
       supplierId: supplier.id,
       items: itemsToOrder,
       expectedDeliveryDate: new Date(Date.now() + supplier.defaultLeadTime * 86400000).toISOString().split('T')[0],
-      notes: `由供應商管理頁面發起採購訂單`,
+      notes: `由供應商頁面建立示範採購草稿；沿用商品成本，不自動套用促銷折扣。`,
       isAiAssisted: false
     });
-
+    if (result.ok === false) {
+      setQuickError(formatValidationErrors(result.errors));
+      return;
+    }
+    setQuickError('');
     setActiveTab('purchase');
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-in fade-in duration-200">
+      {quickError && <p role="alert" className="text-sm text-rose-700">{quickError}</p>}
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-emerald-950/10">
         <div>
@@ -106,8 +116,9 @@ export const SuppliersView: React.FC = () => {
       <div className="bg-emerald-900/5 border border-emerald-900/15 rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-3">
           <Gift className="text-emerald-800" size={18} />
-          <h2 className="text-sm font-bold text-slate-900">供應商現行促銷與商業專案 (SUPPLIER PROMOTIONS)</h2>
+          <h2 className="text-sm font-bold text-slate-900">供應商促銷資料示例</h2>
         </div>
+        <p className="mb-3 text-xs text-slate-500">促銷條件與日期是預設示例，未連接供應商報價。快捷草稿沿用商品成本，不自動套用折扣；數量依 MOQ 與週需求試算。</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {suppliers.flatMap(s => (s.promotions || []).map(p => ({ ...p, supplier: s }))).map(promo => (
             <div key={promo.id} className="bg-white border border-emerald-900/10 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
@@ -132,7 +143,7 @@ export const SuppliersView: React.FC = () => {
                   onClick={() => handleQuickPOForSupplier(promo.supplier)}
                   className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1 cursor-pointer"
                 >
-                  <span>適用促銷建立採購單</span>
+                  <span>建立此供應商採購草稿</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
@@ -216,7 +227,7 @@ export const SuppliersView: React.FC = () => {
                   className="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1 cursor-pointer"
                 >
                   <ShoppingBag size={13} />
-                  <span>建立採購訂單</span>
+                  <span>建立採購草稿</span>
                 </button>
               </div>
             </div>
@@ -232,6 +243,7 @@ export const SuppliersView: React.FC = () => {
             <p className="text-xs text-slate-500 mb-4">登記供應商聯繫方式、最小起訂門檻與交期合約。</p>
 
             <form onSubmit={handleAddSupplierSubmit} className="space-y-4 text-xs">
+              {formError && <p role="alert" className="text-rose-700">{formError}</p>}
               <div>
                 <label className="block text-slate-700 font-semibold mb-1">供應商公司名稱</label>
                 <input
@@ -287,7 +299,7 @@ export const SuppliersView: React.FC = () => {
                     type="number"
                     min="1"
                     value={moq}
-                    onChange={(e) => setMoq(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setMoq(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
                   />
                 </div>
@@ -297,7 +309,7 @@ export const SuppliersView: React.FC = () => {
                     type="number"
                     min="1"
                     value={leadTime}
-                    onChange={(e) => setLeadTime(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setLeadTime(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono"
                   />
                 </div>
