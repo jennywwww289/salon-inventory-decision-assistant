@@ -1341,6 +1341,291 @@ const core = (app: any): CoreData => ({ products: app.products, transactions: ap
 const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
 const stored = (storage: MockStorage) => JSON.parse(storage.values.get(localData.STORAGE_KEY)!);
 
+// Step 25: actual demo imports, actual component handlers and Context commands.
+// Only React hooks and browser storage are mocked; no DOM or React lifecycle runs.
+test('Step25 normal flow: production forms, Context and storage with independent demo data', async t => {
+  const storage = new MockStorage();
+  class NormalDate extends Date {
+    constructor(value?: any) { super(value ?? Date.UTC(2026, 9, 18, 0, 0)); }
+    static now() { return Date.UTC(2026, 9, 18, 0, 0); }
+  }
+  const initialize = () => {
+    const app = runtime('src/context/AppContext.tsx', {
+      '../utils/localData': { ...localData, getBrowserStorage: () => storage },
+    }, false, { Date: NormalDate });
+    const read = () => app.render('AppProvider', { children: null }).props.value;
+    read();
+    return { ...app, read, snapshot: () => JSON.stringify(app.slots) };
+  };
+  const ctx = initialize();
+  const original: CoreData = plain(core(ctx.read()));
+  const importedBefore = JSON.stringify({ INITIAL_PRODUCTS, INITIAL_TRANSACTIONS, INITIAL_PURCHASE_ORDERS });
+  const baseline = plain(ctx.read().inventorySummary);
+  const summary = (state = ctx.read()) => ({
+    skus: state.inventorySummary.totalSkus, units: state.inventorySummary.totalStockUnits,
+    cost: state.inventorySummary.totalInventoryCost,
+  });
+  const checkpoints: Record<string, unknown> = { initial: summary() };
+  const supplier = ctx.read().suppliers.find((s: Supplier) => s.status === 'Active'
+    && s.suppliedBrandIds.some(id => ctx.read().brands.some((b: any) => b.id === id && b.status === 'Active')));
+  assert.ok(supplier);
+  const brand = ctx.read().brands.find((b: any) => b.status === 'Active' && supplier.suppliedBrandIds.includes(b.id));
+  assert.ok(brand);
+  let sku = 'STEP25-NORMAL-001';
+  for (let n = 2; original.products.some(p => p.sku.trim().toUpperCase() === sku); n++) {
+    sku = `STEP25-NORMAL-${String(n).padStart(3, '0')}`;
+  }
+  const input = {
+    name: '正常流程測試商品', sku, spec: '250ml', brandId: brand.id, brandName: brand.name,
+    supplierId: supplier.id, supplierName: supplier.name, category: '洗髮淨化',
+    stock: 10, unitCost: 100, sellingPrice: 150, reorderPoint: 2, moq: 1,
+    leadTime: 10, weeklyDemand: 1, monthlyDemand: 4,
+  };
+  let productId = '', poId = '', poNumber = '';
+  let detail: ReturnType<typeof component>;
+  let roundTrip: () => void;
+  const target = () => ctx.read().products.find((p: Product) => p.id === productId);
+  const inventory = component('src/components/inventory/InventoryView.tsx', 'InventoryView', ctx);
+  const search = (value: string) => inventory.find(n => n.type === 'input' && n.props.placeholder?.includes('SKU'))
+    .props.onChange({ target: { value } });
+  const change = (ui: ReturnType<typeof component>, label: string, value: string) => {
+    const container = elements(ui.render()).find(n => Array.isArray(n.props?.children)
+      && n.props.children.some((child: any) => child?.type === 'label' && text(child) === label));
+    assert.ok(container, `Missing field ${label}`);
+    const field = elements(container).find(n => n.type === 'input' || n.type === 'select');
+    assert.ok(field, `Missing input ${label}`);
+    field.props.onChange({ target: { value } });
+  };
+  const assertOriginal = (state = ctx.read()) => {
+    const data = core(state);
+    for (const key of Object.keys(original) as (keyof CoreData)[]) {
+      const ids = new Set(original[key].map(row => row.id));
+      assert.deepEqual(plain(data[key].filter(row => ids.has(row.id))), original[key], `Original ${key} unchanged`);
+    }
+    assert.equal(JSON.stringify({ INITIAL_PRODUCTS, INITIAL_TRANSACTIONS, INITIAL_PURCHASE_ORDERS }), importedBefore);
+    assert.equal(storage.values.get('unrelated-site-key'), 'keep');
+  };
+  const assertDelta = (units: number) => {
+    assert.deepEqual(summary(), {
+      skus: baseline.totalSkus + 1, units: baseline.totalStockUnits + units,
+      cost: baseline.totalInventoryCost + units * 100,
+    });
+    assertOriginal();
+  };
+  const assertStockViews = (stock: number) => {
+    const row = inventory.find(n => n.type === 'tr' && n.props.onClick && text(n).includes(sku));
+    const cells = elements(row).filter(n => n.type === 'td');
+    assert.equal(text(elements(cells[2]).find(n => n.type === 'span')), String(stock));
+    assert.ok(text(row).includes('成本 NT$ 100'));
+    // The detail instance deliberately retains its original product prop from B.
+    const metric = detail.find(n => Array.isArray(n.props?.children)
+      && n.props.children[0]?.type === 'span' && text(n.props.children[0]) === '現有庫存 (件)');
+    assert.equal(text(metric.props.children[1]), String(stock));
+    assert.ok(text(detail.render()).includes('NT$ 100 / 150'));
+  };
+
+  await t.test('A: homepage anchors, all nine App branches and page bodies, bidirectional callbacks', () => {
+    const pages = [
+      ['dashboard', 'dashboard', 'DashboardView', '總覽儀表板'],
+      ['inventory', 'inventory', 'InventoryView', '庫存管理動態'],
+      ['products', 'products', 'ProductsView', '商品品項清單'],
+      ['brands', 'brands', 'BrandsView', '品牌績效評估'],
+      ['suppliers', 'suppliers', 'SuppliersView', '供應商與促銷'],
+      ['purchase', 'purchase', 'PurchaseOrdersView', '採購訂單與入庫'],
+      ['analytics', 'analytics', 'AnalyticsView', '商業決策分析'],
+      ['insights', 'insights', 'AIInsightsView', 'AI 建議示範'],
+      ['users', 'users', 'UsersView', '人員與角色示範'],
+    ];
+    const overrides: Record<string, any> = {
+      './context/AppContext': { AppProvider: 'ProviderBoundary', useApp: ctx.read },
+      './components/home/PersonalHome': { PersonalHome: 'HomeBoundary' },
+    };
+    for (const [, folder, name] of pages) overrides[`./components/${folder}/${name}`] = { [name]: name };
+    const app = runtime('src/App.tsx', overrides);
+    const root = app.render('default');
+    assert.equal(root.type, 'ProviderBoundary');
+    const render = () => app.render(root.props.children.type);
+    const homeEntry = () => elements(render()).find(n => n.type === 'HomeBoundary');
+    assert.ok(homeEntry(), 'Default area is home');
+    const home = runtime('src/components/home/PersonalHome.tsx');
+    const homeTree = home.render('PersonalHome', { onEnterSystem: homeEntry()!.props.onEnterSystem });
+    const anchors = elements(homeTree).filter(n => n.type === 'a' && n.props.href?.startsWith('#'));
+    assert.equal(anchors.length, 5);
+    for (const a of anchors) assert.equal(elements(homeTree).filter(n => n.props?.id === a.props.href.slice(1)).length, 1);
+    elements(homeTree).find(n => n.type === 'button' && text(n) === '進入庫存系統')!.props.onClick();
+    assert.ok(!homeEntry());
+    const sidebar = component('src/components/layout/Sidebar.tsx', 'Sidebar', ctx, { isOpen: false, onClose() {} });
+    for (const [id, folder, name, label] of pages) {
+      sidebar.find(n => n.type === 'button' && text(n).includes(label)).props.onClick();
+      assert.equal(ctx.read().activeTab, id);
+      assert.ok(elements(render()).some(n => n.type === name), `${id}: correct App branch`);
+      const view = component(`src/components/${folder}/${name}.tsx`, name, ctx);
+      assert.ok(text(view.render()).trim(), `${id}: production root component returns content`);
+    }
+    sidebar.find(n => n.type === 'button' && text(n).includes('庫存管理動態')).props.onClick();
+    roundTrip = () => {
+      const before = JSON.stringify(core(ctx.read())), tab = ctx.read().activeTab;
+      elements(render()).find(n => n.type === 'button' && text(n) === '返回個人首頁')!.props.onClick();
+      assert.ok(homeEntry());
+      homeEntry()!.props.onEnterSystem();
+      assert.ok(!homeEntry());
+      assert.equal(ctx.read().activeTab, tab);
+      assert.equal(JSON.stringify(core(ctx.read())), before);
+      assert.ok(elements(render()).some(n => n.type === 'InventoryView'));
+    };
+    roundTrip();
+    assert.deepEqual(plain(core(ctx.read())), original);
+    assert.equal(storage.writes.length, 0);
+    checkpoints.A = { tabs: pages.map(p => p[0]), anchors: anchors.map(a => a.props.href), summary: summary() };
+  });
+
+  await t.test('B: actual product form, exact SKU search, matching brand filter, clear and return', () => {
+    let closed = 0;
+    const form = component('src/components/modals/NewProductModal.tsx', 'NewProductModal', ctx, { onClose: () => closed++ });
+    for (const [label, value] of [
+      ['商品名稱', input.name], ['SKU 編號', sku], ['容量規格', input.spec], ['品牌', brand.id],
+      ['品類', input.category], ['對應供應商', supplier.id], ['初始在手庫存 (瓶)', '10'],
+      ['進貨成本 (NT$)', '100'], ['門市售價 (NT$)', '150'], ['安全補貨點', '2'],
+      ['起訂量 (MOQ)', '1'], ['預估每週需求', '1'],
+    ]) change(form, label, value);
+    form.find(n => n.type === 'form').props.onSubmit(event);
+    assert.equal(closed, 1);
+    const created = ctx.read().products.filter((p: Product) => p.sku === sku);
+    assert.equal(created.length, 1);
+    productId = created[0].id;
+    for (const [key, value] of Object.entries(input)) assert.equal(target()[key], value, key);
+    assertDelta(10);
+    search(sku);
+    assert.ok(text(inventory.render()).includes('共顯示 1 項商品'));
+    const brandFilter = inventory.find(n => n.type === 'select'
+      && elements(n).some(o => o.type === 'option' && o.props.value === brand.id));
+    brandFilter.props.onChange({ target: { value: brand.id } });
+    assert.ok(text(inventory.render()).includes(sku));
+    assert.ok(text(inventory.render()).includes('共顯示 1 項商品'));
+    brandFilter.props.onChange({ target: { value: 'ALL' } });
+    search('');
+    assert.ok(text(inventory.render()).includes(`共顯示 ${baseline.totalSkus + 1} 項商品`));
+    const row = inventory.find(n => n.type === 'tr' && n.props.onClick && text(n).includes(sku));
+    row.props.onClick();
+    assert.equal(ctx.read().selectedProductId, productId);
+    const detailEntry = elements(inventory.render()).find(n => n.type?.name === 'ProductDetailModal');
+    assert.equal(detailEntry!.props.product.id, productId);
+    detail = component('src/components/products/ProductDetailModal.tsx', 'ProductDetailModal', ctx, detailEntry!.props);
+    assertStockViews(10);
+    const cards = component('src/components/products/ProductsView.tsx', 'ProductsView', ctx);
+    cards.find(n => n.type === 'input' && n.props.placeholder?.includes('SKU')).props.onChange({ target: { value: sku } });
+    assert.ok(text(cards.render()).includes(sku));
+    roundTrip();
+    assert.equal(target().stock, 10);
+    checkpoints.B = summary();
+  });
+
+  await t.test('C: actual service form deducts three and displays seven with one cost snapshot', () => {
+    ctx.read().setIsServiceUsageModalOpen(true);
+    const usage = component('src/components/modals/ServiceUsageModal.tsx', 'ServiceUsageModal', ctx);
+    change(usage, '選擇使用商品', productId);
+    change(usage, '領取數量 (瓶/入/組)', '3');
+    usage.find(n => n.type === 'form').props.onSubmit(event);
+    assert.equal(target().stock, 7);
+    const ledger = ctx.read().transactions.filter((tx: any) => tx.productId === productId);
+    assert.equal(ledger.length, 1);
+    assert.equal(ledger[0].type, 'Service Usage');
+    assert.equal(ledger[0].quantity, -3);
+    assert.equal(ledger[0].resultingStock, 7);
+    assert.equal(ledger[0].unitCost, 100);
+    assert.ok(text(usage.find(n => n.props.role === 'status')).includes('目前剩餘：7'));
+    assertStockViews(7);
+    assert.ok(text(detail.render()).includes('-3'));
+    assertDelta(7);
+    usage.find(n => n.type === 'button' && text(n) === '完成並關閉').props.onClick();
+    assert.equal(ctx.read().isServiceUsageModalOpen, false);
+    checkpoints.C = summary();
+  });
+
+  await t.test('D: actual purchase form and detail handlers progress Draft to Received once', () => {
+    let closed = 0;
+    const form = component('src/components/modals/NewPOModal.tsx', 'NewPOModal', ctx, { defaultProductId: productId, onClose: () => closed++ });
+    change(form, '預期到貨日', '2026-10-20');
+    form.find(n => n.type === 'input' && n.props.type === 'number').props.onChange({ target: { value: '5' } });
+    form.find(n => n.type === 'form').props.onSubmit(event);
+    assert.equal(closed, 1);
+    assert.equal(ctx.read().purchaseOrders.length, original.purchaseOrders.length + 1);
+    const order = ctx.read().purchaseOrders[0];
+    poId = order.id; poNumber = order.poNumber;
+    assert.equal(order.status, 'Draft');
+    assert.equal(order.supplierId, supplier.id);
+    assert.equal(order.items.length, 1);
+    assert.equal(order.items[0].productId, productId);
+    assert.equal(order.items[0].sku, sku);
+    assert.equal(order.items[0].quantity, 5);
+    assert.equal(order.items[0].unitCost, 100);
+    assert.equal(order.items[0].subtotal, 500);
+    assert.equal(order.totalAmount, 500);
+    assert.equal(target().stock, 7);
+    const view = component('src/components/purchase/PurchaseOrdersView.tsx', 'PurchaseOrdersView', ctx);
+    view.find(n => n.type === 'div' && n.props.onClick && text(n).includes(poNumber)).props.onClick();
+    const stages = [{ status: 'Draft', stock: target().stock }];
+    for (const [label, status] of [['核准採購草稿', 'Approved'], ['標記已下單（示範）', 'Ordered'], ['貨到點收！立即入庫更新', 'Received']]) {
+      view.find(n => n.type === 'button' && text(n) === label).props.onClick();
+      const current = ctx.read().purchaseOrders.find((po: PurchaseOrder) => po.id === poId);
+      assert.equal(current.status, status);
+      assert.equal(target().stock, status === 'Received' ? 12 : 7);
+      assert.ok(text(view.render()).includes(`目前庫存：${target().stock}`));
+      assert.equal(ctx.read().transactions.filter((tx: any) => tx.productId === productId).length, status === 'Received' ? 2 : 1);
+      stages.push({ status, stock: target().stock });
+    }
+    const ledger = ctx.read().transactions.filter((tx: any) => tx.productId === productId);
+    assert.equal(ledger.length, 2);
+    const receipt = ledger.find((tx: any) => tx.type === 'Purchase');
+    assert.equal(receipt.quantity, 5);
+    assert.equal(receipt.unitCost, 100);
+    assert.equal(receipt.resultingStock, 12);
+    assert.equal(receipt.purchaseOrderId, poId);
+    assert.ok(receipt.note.includes(poNumber));
+    assert.equal(new Set(ledger.map((tx: any) => tx.id)).size, 2);
+    const currentDetail = view.find(n => Array.isArray(n.props?.children)
+      && n.props.children.some((child: any) => child?.type === 'h2' && text(child).includes('採購單稽核與決策佐證')));
+    assert.ok(text(currentDetail).includes(poNumber));
+    assert.equal(elements(currentDetail).filter(n => n.type === 'button' && text(n).includes('點收')).length, 0);
+    const currentCard = view.find(n => n.type === 'div' && n.props.onClick && text(n).includes(poNumber));
+    assert.equal(elements(currentCard).filter(n => n.type === 'button' && text(n).includes('點收')).length, 0);
+    assertStockViews(12);
+    assert.ok(text(detail.render()).includes('出入庫異動帳本 (2)'));
+    assertDelta(12);
+    checkpoints.D = { ...summary(), stages };
+  });
+
+  await t.test('E: automatic formal save and fresh Context restore all six core tables without replay', () => {
+    assert.equal(ctx.read().storageStatus.kind, 'saved');
+    assert.equal(storage.writes.length, 6); // add, service, create PO, approve, order, receive
+    assert.ok(storage.writes.every(key => key === localData.STORAGE_KEY));
+    const published = plain(core(ctx.read())), writes = storage.writes.length;
+    const restored = initialize(); // Calls production loadCoreData and its real validator.
+    assert.equal(storage.writes.length, writes, 'Initialization does not overwrite saved data');
+    assert.equal(restored.read().storageStatus.kind, 'saved');
+    assert.deepEqual(plain(core(restored.read())), published);
+    assertOriginal(restored.read());
+    const product = restored.read().products.find((p: Product) => p.id === productId);
+    assert.equal(product.stock, 12);
+    assert.ok(restored.read().brands.some((b: any) => b.id === product.brandId));
+    assert.ok(restored.read().suppliers.some((s: any) => s.id === product.supplierId));
+    const ledger = restored.read().transactions.filter((tx: any) => tx.productId === productId);
+    assert.equal(ledger.length, 2);
+    assert.equal(ledger.filter((tx: any) => tx.quantity === -3 && tx.unitCost === 100).length, 1);
+    assert.equal(ledger.filter((tx: any) => tx.quantity === 5 && tx.unitCost === 100 && tx.purchaseOrderId === poId).length, 1);
+    assert.equal(restored.read().purchaseOrders.find((po: PurchaseOrder) => po.id === poId).status, 'Received');
+    assert.deepEqual(summary(restored.read()), {
+      skus: baseline.totalSkus + 1, units: baseline.totalStockUnits + 12, cost: baseline.totalInventoryCost + 1200,
+    });
+    checkpoints.E = { ...summary(restored.read()), storageKind: restored.read().storageStatus.kind,
+      writes, transactionIds: ledger.map((tx: any) => tx.id) };
+  });
+  t.diagnostic(JSON.stringify({ sku, input, productId, poId, poNumber,
+    purchaseInput: { supplierId: supplier.id, productId, quantity: 5, unitCost: 100, expectedDeliveryDate: '2026-10-20' },
+    originalCounts: Object.fromEntries(Object.entries(original).map(([key, rows]) => [key, (rows as any[]).length])),
+    checkpoints, scope: 'production Context/modules/component handlers with hook/storage mocks; no browser, real React mount or user data' }));
+});
+
 test('Storage: absent snapshot creates deep independent demo copies without startup writes', () => {
   const storage = new MockStorage();
   const before = JSON.stringify({ INITIAL_PRODUCTS, INITIAL_TRANSACTIONS, INITIAL_PURCHASE_ORDERS });

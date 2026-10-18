@@ -1,0 +1,48 @@
+TAP version 13
+# Subtest: Step25 normal flow: production forms, Context and storage with independent demo data
+    # Subtest: A: homepage anchors, all nine App branches and page bodies, bidirectional callbacks
+    ok 1 - A: homepage anchors, all nine App branches and page bodies, bidirectional callbacks
+      ---
+      duration_ms: 298.114
+      type: 'test'
+      ...
+    # Subtest: B: actual product form, exact SKU search, matching brand filter, clear and return
+    ok 2 - B: actual product form, exact SKU search, matching brand filter, clear and return
+      ---
+      duration_ms: 123.9986
+      type: 'test'
+      ...
+    # Subtest: C: actual service form deducts three and displays seven with one cost snapshot
+    ok 3 - C: actual service form deducts three and displays seven with one cost snapshot
+      ---
+      duration_ms: 39.7217
+      type: 'test'
+      ...
+    # Subtest: D: actual purchase form and detail handlers progress Draft to Received once
+    ok 4 - D: actual purchase form and detail handlers progress Draft to Received once
+      ---
+      duration_ms: 66.5917
+      type: 'test'
+      ...
+    # Subtest: E: automatic formal save and fresh Context restore all six core tables without replay
+    ok 5 - E: automatic formal save and fresh Context restore all six core tables without replay
+      ---
+      duration_ms: 21.3236
+      type: 'test'
+      ...
+    1..5
+ok 1 - Step25 normal flow: production forms, Context and storage with independent demo data
+  ---
+  duration_ms: 758.118
+  type: 'test'
+  ...
+# {"sku":"STEP25-NORMAL-001","input":{"name":"正常流程測試商品","sku":"STEP25-NORMAL-001","spec":"250ml","brandId":"b-1","brandName":"AROMASE 艾瑪絲","supplierId":"sup-1","supplierName":"沛森生化物流有限公司","category":"洗髮淨化","stock":10,"unitCost":100,"sellingPrice":150,"reorderPoint":2,"moq":1,"leadTime":10,"weeklyDemand":1,"monthlyDemand":4},"productId":"prod-1792281600000","poId":"po-1792281600000","poNumber":"PO-2026-1792281600000","purchaseInput":{"supplierId":"sup-1","productId":"prod-1792281600000","quantity":5,"unitCost":100,"expectedDeliveryDate":"2026-10-20"},"originalCounts":{"products":111,"transactions":9,"purchaseOrders":3,"brands":8,"suppliers":5,"users":4},"checkpoints":{"initial":{"skus":111,"units":2382,"cost":1456370},"A":{"tabs":["dashboard","inventory","products","brands","suppliers","purchase","analytics","insights","users"],"anchors":["\#home","\#about","\#skills","\#projects","\#contact"],"summary":{"skus":111,"units":2382,"cost":1456370}},"B":{"skus":112,"units":2392,"cost":1457370},"C":{"skus":112,"units":2389,"cost":1457070},"D":{"skus":112,"units":2394,"cost":1457570,"stages":[{"status":"Draft","stock":7},{"status":"Approved","stock":7},{"status":"Ordered","stock":7},{"status":"Received","stock":12}]},"E":{"skus":112,"units":2394,"cost":1457570,"storageKind":"saved","writes":6,"transactionIds":["tx-1792281600000-1","tx-1792281600000"]}},"scope":"production Context/modules/component handlers with hook/storage mocks; no browser, real React mount or user data"}
+1..1
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1549.8067
