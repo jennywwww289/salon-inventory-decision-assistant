@@ -119,7 +119,7 @@ export const ProductsView: React.FC = () => {
             <div
               key={p.id}
               onClick={() => setSelectedProductId(p.id)}
-              className="bg-white border border-slate-200 rounded-2xl p-4.5 hover:border-emerald-300 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+              className="bg-white border border-slate-200 rounded-2xl p-4.5 hover:border-emerald-300 hover:shadow-md feedback-card cursor-pointer flex flex-col justify-between group"
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">

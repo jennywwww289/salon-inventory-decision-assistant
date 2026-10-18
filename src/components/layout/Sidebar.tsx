@@ -178,7 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
         <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
           <div
-            className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+            className="bg-emerald-600 h-full rounded-full feedback-meter"
             style={{
               width: `${(inventorySummary.healthyCount / inventorySummary.totalSkus) * 100}%`
             }}

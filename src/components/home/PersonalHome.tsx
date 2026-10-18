@@ -29,7 +29,7 @@ export const PersonalHome: React.FC<PersonalHomeProps> = ({ onEnterSystem }) => 
   };
 
   return (
-  <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
+  <div className="feedback-scope min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-6 py-5">
         <p className="type-body font-semibold text-slate-900">Henry Yan</p>
@@ -166,9 +166,15 @@ export const PersonalHome: React.FC<PersonalHomeProps> = ({ onEnterSystem }) => 
             aria-busy={copyStatus === 'copying'}
             className="type-label min-h-11 rounded-lg border border-emerald-800 px-4 py-2 text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800 disabled:cursor-wait disabled:opacity-50 cursor-pointer"
           >
-            複製 Email
+            {copyStatus === 'copying' ? '正在複製…' : '複製 Email'}
           </button>
-          <p role="status" aria-live="polite" aria-atomic="true" className="type-body mt-3 min-h-12 text-slate-600">
+          <p
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            data-feedback={copyStatus === 'idle' ? undefined : copyStatus}
+            className="type-body mt-3 min-h-12 text-slate-600"
+          >
             {copyStatus === 'copying' && '正在複製 Email…'}
             {copyStatus === 'success' && '已複製 Email'}
             {copyStatus === 'error' && '無法自動複製，請手動選取信箱文字複製。'}

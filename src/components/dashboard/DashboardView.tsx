@@ -121,7 +121,7 @@ export const DashboardView: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* 01 — Critical Stock Risk */}
-          <div className="bg-white border-2 border-rose-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-rose-300 transition-all">
+          <div className="bg-white border-2 border-rose-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-rose-300 feedback-card">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="type-detail font-bold text-rose-700 tracking-wider">
@@ -199,7 +199,7 @@ export const DashboardView: React.FC = () => {
           </div>
 
           {/* 02 — Overstock Risk */}
-          <div className="bg-white border border-amber-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-amber-300 transition-all">
+          <div className="bg-white border border-amber-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-amber-300 feedback-card">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="type-detail font-bold text-amber-800 tracking-wider">
@@ -269,7 +269,7 @@ export const DashboardView: React.FC = () => {
           </div>
 
           {/* 03 — Purchasing Opportunity */}
-          <div className="bg-emerald-900/5 border border-emerald-900/20 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-700/40 transition-all relative overflow-hidden">
+          <div className="bg-emerald-900/5 border border-emerald-900/20 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-700/40 feedback-card relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="type-detail font-bold text-emerald-800 tracking-wider">

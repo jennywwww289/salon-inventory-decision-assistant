@@ -154,6 +154,7 @@ export const InventoryView: React.FC = () => {
                 type="button"
                 key={tab.id}
                 onClick={() => setSelectedStatus(tab.id)}
+                aria-pressed={selectedStatus === tab.id}
                 className={`type-label px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
  selectedStatus === tab.id
  ? 'bg-white text-slate-900 shadow-xs '
@@ -364,7 +365,7 @@ export const InventoryView: React.FC = () => {
 
         {/* Table footer count */}
         <div className="p-3 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 type-detail text-slate-500">
-          <span>
+          <span role="status" aria-live="polite" aria-atomic="true">
             共顯示 <strong className="text-slate-800 font-mono">{filteredProducts.length}</strong> 項商品 (總品項 {products.length})
           </span>
           <span className="type-detail text-slate-600">

@@ -629,7 +629,7 @@ test('Service handler: actual result shows 7 or 0 without subtracting twice', ()
     assert.equal(ctx.read().transactions.length, 1);
     assert.equal(ctx.read().transactions[0].quantity, -Number(quantity));
     assert.ok(text(ui.render()).includes(`目前剩餘：${stock}`));
-    assert.equal(ui.timers.length, 1);
+    assert.equal(ui.timers.length, 0, 'Success stays visible until explicitly closed');
   }
 });
 
@@ -1739,8 +1739,8 @@ test('Step17 flow: five production component/Context flows with isolated storage
     assert.equal(ledger.length, 1); assert.equal(ledger[0].quantity, -3);
     assert.equal(ledger[0].resultingStock, 7);
     assertDelta(7, 700);
-    assert.equal(usage.timers.length, 1);
-    (usage.timers[0] as () => void)(); // Simulate timer completion; no real DOM/timing claim.
+    assert.equal(usage.timers.length, 0);
+    usage.find(n => n.type === 'button' && text(n) === '完成並關閉').props.onClick();
     ctx.read().setIsServiceUsageModalOpen(true);
     change(usage, '領取數量 (瓶/入/組)', '8');
     const before = ctx.snapshot(), writes = storage.writes.length;
@@ -1910,4 +1910,102 @@ test('Layout header: native navigation and role controls handle clicks, Escape a
   function eventForEscape() {
     return { key: 'Escape', preventDefault() {} };
   }
+});
+
+// Production handlers with controlled promises; no real clipboard or browser DOM.
+test('Feedback copy: pending write stays busy, blocks repeated calls and announces success only after resolution', async () => {
+  let resolveWrite!: () => void;
+  const pendingWrite = new Promise<void>(resolve => { resolveWrite = resolve; });
+  const writes: string[] = [];
+  const ui = runtime('src/components/home/PersonalHome.tsx', {}, false, {
+    navigator: { clipboard: { writeText(value: string) { writes.push(value); return pendingWrite; } } },
+  });
+  const render = () => ui.render('PersonalHome', { onEnterSystem() {} });
+  const copy = () => elements(render()).find(n => n.type === 'button' && n.props['aria-busy'] !== undefined)!;
+  const status = () => elements(render()).find(n => n.props.role === 'status')!;
+
+  const pending = copy().props.onClick();
+  assert.deepEqual(writes, ['your-email@example.com']);
+  assert.equal(copy().props.disabled, true);
+  assert.equal(copy().props['aria-busy'], true);
+  assert.match(text(copy()), /正在複製/);
+  assert.equal(status().props['data-feedback'], 'copying');
+  assert.match(text(status()), /正在複製 Email/);
+  assert.equal(text(status()).includes('已複製'), false);
+  await copy().props.onClick(); // Bypass the native disabled UI to check the existing ref guard.
+  assert.equal(writes.length, 1);
+  assert.equal(ui.timers.length, 0);
+
+  resolveWrite();
+  await pending;
+  assert.equal(copy().props.disabled, false);
+  assert.equal(copy().props['aria-busy'], false);
+  assert.equal(text(status()), '已複製 Email');
+  assert.equal(status().props['data-feedback'], 'success');
+  assert.equal(elements(render()).filter(n => n.props.role === 'status').length, 1);
+});
+
+test('Feedback copy: rejected write restores the button and keeps failure and manual-copy guidance', async () => {
+  let rejectWrite!: (reason: Error) => void;
+  const pendingWrite = new Promise<void>((_resolve, reject) => { rejectWrite = reject; });
+  const writes: string[] = [];
+  const ui = runtime('src/components/home/PersonalHome.tsx', {}, false, {
+    navigator: { clipboard: { writeText(value: string) { writes.push(value); return pendingWrite; } } },
+  });
+  const render = () => ui.render('PersonalHome', { onEnterSystem() {} });
+  const copy = () => elements(render()).find(n => n.type === 'button' && n.props['aria-busy'] !== undefined)!;
+  const pending = copy().props.onClick();
+  assert.equal(copy().props.disabled, true);
+  rejectWrite(new Error('Mock clipboard rejection'));
+  await pending;
+  const status = elements(render()).find(n => n.props.role === 'status')!;
+  assert.deepEqual(writes, ['your-email@example.com']);
+  assert.equal(copy().props.disabled, false);
+  assert.equal(copy().props['aria-busy'], false);
+  assert.equal(status.props['data-feedback'], 'error');
+  assert.equal(text(status), '無法自動複製，請手動選取信箱文字複製。');
+  assert.equal(text(status).includes('已複製'), false);
+  assert.ok(elements(render()).some(n => n.type === 'a' && n.props.href === 'mailto:your-email@example.com'));
+});
+
+test('Feedback copy: unavailable API keeps selectable email and a single readable failure message', async () => {
+  const ui = runtime('src/components/home/PersonalHome.tsx', {}, false, { navigator: {} });
+  const render = () => ui.render('PersonalHome', { onEnterSystem() {} });
+  const copy = () => elements(render()).find(n => n.type === 'button' && n.props['aria-busy'] !== undefined)!;
+  await copy().props.onClick();
+  const statuses = elements(render()).filter(n => n.props.role === 'status');
+  assert.equal(statuses.length, 1);
+  assert.equal(statuses[0].props['aria-live'], 'polite');
+  assert.equal(statuses[0].props['data-feedback'], 'error');
+  assert.match(text(statuses[0]), /無法自動複製，請手動選取信箱文字複製/);
+  assert.ok(text(render()).includes('your-email@example.com'));
+  assert.equal(copy().props.disabled, false);
+  assert.equal(ui.timers.length, 0);
+});
+
+test('Feedback service: success remains readable until explicit close, without extra inventory writes or timers', () => {
+  const ctx = context();
+  ctx.read().setIsServiceUsageModalOpen(true);
+  const ui = component('src/components/modals/ServiceUsageModal.tsx', 'ServiceUsageModal', ctx);
+  ui.find(n => n.type === 'input' && n.props.type === 'number').props.onChange({ target: { value: '3' } });
+  ui.find(n => n.type === 'form').props.onSubmit(event);
+  assert.equal(ctx.read().products[0].stock, 7);
+  assert.equal(ctx.read().transactions.length, 1);
+  assert.equal(ctx.read().transactions[0].quantity, -3);
+  assert.equal(ui.timers.length, 0);
+  const beforeClose = JSON.stringify(core(ctx.read()));
+  for (let i = 0; i < 3; i++) {
+    assert.equal(ctx.read().isServiceUsageModalOpen, true);
+    const statuses = elements(ui.render()).filter(n => n.props.role === 'status');
+    assert.equal(statuses.length, 1);
+    assert.match(text(statuses[0]), /目前剩餘：7/);
+    assert.equal(elements(ui.render()).some(n => n.type === 'form'), false);
+  }
+  ui.find(n => n.type === 'button' && text(n) === '完成並關閉').props.onClick();
+  assert.equal(ctx.read().isServiceUsageModalOpen, false);
+  assert.equal(JSON.stringify(core(ctx.read())), beforeClose);
+  ctx.read().setIsServiceUsageModalOpen(true);
+  assert.ok(ui.find(n => n.type === 'form'));
+  assert.equal(elements(ui.render()).some(n => n.props.role === 'status'), false);
+  assert.equal(JSON.stringify(core(ctx.read())), beforeClose);
 });

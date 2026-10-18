@@ -32,7 +32,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div key={dataRevision} className="system-shell min-h-screen min-w-0 bg-slate-50/60 text-slate-800 flex flex-col font-sans">
+    <div key={dataRevision} className="feedback-scope system-shell min-h-screen min-w-0 bg-slate-50/60 text-slate-800 flex flex-col font-sans">
       <nav aria-label="首頁與系統切換" className="type-detail border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
         <button
           type="button"

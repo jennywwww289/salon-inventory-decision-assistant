@@ -28,6 +28,16 @@ export const ServiceUsageModal: React.FC = () => {
 
   const targetProduct = products.find(p => p.id === selectedProductId);
 
+  const handleClose = () => {
+    if (isSuccess) {
+      setNote('');
+      setServiceName('');
+    }
+    setIsSuccess(false);
+    setCompletedMovement(null);
+    setIsServiceUsageModalOpen(false);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const quantity = validatePositiveQuantity(parseNumericInput(qty));
@@ -50,12 +60,6 @@ export const ServiceUsageModal: React.FC = () => {
     setError('');
     setCompletedMovement(result.value);
     setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      setIsServiceUsageModalOpen(false);
-      setNote('');
-      setServiceName('');
-    }, 1200);
   };
 
   return (
@@ -74,7 +78,7 @@ export const ServiceUsageModal: React.FC = () => {
           <button
             type="button"
             aria-label="關閉領料表單"
-            onClick={() => setIsServiceUsageModalOpen(false)}
+            onClick={handleClose}
             className="type-label p-1.5 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
           >
             <X size={20} />
@@ -82,14 +86,24 @@ export const ServiceUsageModal: React.FC = () => {
         </div>
 
         {isSuccess ? (
-          <div className="py-8 text-center space-y-2 animate-in zoom-in-95">
+          <div className="py-8 text-center space-y-2">
             <div className="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 size={28} />
             </div>
-            <h3 className="type-item-title text-slate-900">已成功扣除並寫入出入庫帳本！</h3>
-            <p className="type-detail text-slate-500">
-              {completedMovement?.productName} 目前剩餘：{completedMovement?.resultingStock} {targetProduct?.spec}
-            </p>
+            <div role="status" aria-atomic="true" data-feedback="success">
+              <h3 className="type-item-title text-slate-900">已成功扣除並寫入出入庫帳本！</h3>
+              <p className="type-detail text-slate-500">
+                {completedMovement?.productName} 目前剩餘：{completedMovement?.resultingStock} {targetProduct?.spec}
+              </p>
+            </div>
+            <button
+              type="button"
+              autoFocus
+              onClick={handleClose}
+              className="type-label min-h-11 rounded-lg bg-emerald-800 px-5 py-2 text-white hover:bg-emerald-900 cursor-pointer"
+            >
+              完成並關閉
+            </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="type-detail space-y-4">
@@ -174,6 +188,7 @@ export const ServiceUsageModal: React.FC = () => {
                         key={q}
                         type="button"
                         onClick={() => setQty(String(q))}
+                        aria-pressed={qty === String(q)}
                         className={`type-label px-2.5 py-1.5 rounded border cursor-pointer ${
  qty === String(q) ? 'bg-emerald-800 text-white ' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
  }`}
@@ -211,7 +226,7 @@ export const ServiceUsageModal: React.FC = () => {
             <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setIsServiceUsageModalOpen(false)}
+                onClick={handleClose}
                 className="type-label px-4 py-2 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 cursor-pointer"
               >
                 取消

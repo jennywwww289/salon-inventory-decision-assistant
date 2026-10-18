@@ -111,7 +111,7 @@ export const UsersView: React.FC = () => {
           return (
             <div
               key={u.id}
-              className={`bg-white border rounded-2xl p-5 shadow-xs flex flex-col justify-between transition-all ${
+              className={`bg-white border rounded-2xl p-5 shadow-xs flex flex-col justify-between feedback-card ${
                 isCurrent ? 'border-emerald-700 ring-2 ring-emerald-700/10' : 'border-slate-200 hover:border-slate-300'
               }`}
             >

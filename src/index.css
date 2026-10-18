@@ -155,3 +155,88 @@
 .type-home-title {
   font-size: 2rem;
 }
+
+/* Interaction feedback is scoped to this app; 160ms is a project choice. */
+.feedback-scope :where(button, a[href], input, select, textarea) {
+  transition-property: background-color, border-color, color, box-shadow, opacity;
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
+}
+
+.feedback-scope :where(button, a[href], input, select, textarea, [tabindex="0"]):focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 3px;
+}
+
+.feedback-scope :where(button[aria-expanded="true"], button[aria-pressed="true"]) {
+  box-shadow: inset 0 0 0 1px #047857;
+}
+
+@media (hover: hover) {
+  .feedback-scope button:enabled:hover {
+    background-image: linear-gradient(rgb(6 78 59 / 7%), rgb(6 78 59 / 7%));
+  }
+
+  .feedback-scope a[href]:hover {
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+  }
+
+  .feedback-scope :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea):enabled:hover {
+    border-color: #64748b;
+  }
+}
+
+.feedback-scope button:enabled:active {
+  background-image: linear-gradient(rgb(6 78 59 / 18%), rgb(6 78 59 / 18%));
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+
+.feedback-scope a[href]:active {
+  background-color: #d1fae5;
+}
+
+.feedback-scope :where(button, input, select, textarea):disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  background-image: none;
+}
+
+.feedback-scope button:disabled[aria-busy="true"] {
+  cursor: progress;
+}
+
+.feedback-scope :where([role="alert"], [data-feedback="error"]) {
+  border-inline-start: 3px solid #be123c;
+  padding-inline-start: 0.75rem;
+  color: #be123c;
+}
+
+.feedback-scope [data-feedback="success"] {
+  color: #065f46;
+}
+
+.feedback-scope .feedback-card {
+  transition-property: border-color, background-color, box-shadow;
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
+}
+
+.feedback-scope .feedback-meter {
+  transition-property: width;
+  transition-duration: 160ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-scope,
+  .feedback-scope *,
+  .feedback-scope *::before,
+  .feedback-scope *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

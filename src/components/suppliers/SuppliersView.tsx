@@ -165,7 +165,7 @@ export const SuppliersView: React.FC = () => {
           return (
             <div
               key={s.id}
-              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-300 transition-all"
+              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-300 feedback-card"
             >
               <div>
                 <div className="flex items-center justify-between mb-2">

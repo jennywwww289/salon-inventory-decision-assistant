@@ -145,7 +145,7 @@ export const PurchaseOrdersView: React.FC = () => {
                 <div
                   key={po.id}
                   onClick={() => { setSelectedPOId(po.id); setStatusError(''); setStatusMessage(''); }}
-                  className={`bg-white border rounded-2xl p-5 shadow-xs transition-all cursor-pointer ${
+                  className={`bg-white border rounded-2xl p-5 shadow-xs feedback-card cursor-pointer ${
                     isSelected ? 'border-emerald-700 ring-2 ring-emerald-700/10' : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >

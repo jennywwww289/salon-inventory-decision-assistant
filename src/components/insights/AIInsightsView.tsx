@@ -163,7 +163,7 @@ export const AIInsightsView: React.FC = () => {
           return (
             <div
               key={insight.id}
-              className={`bg-white border rounded-2xl p-6 shadow-xs transition-all ${borderColor}`}
+              className={`bg-white border rounded-2xl p-6 shadow-xs feedback-card ${borderColor}`}
             >
               {/* Header row */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
