@@ -26,9 +26,7 @@ export const DashboardView: React.FC = () => {
     currentUser, 
     inventorySummary, 
     products,
-    brands,
-    suppliers,
-    insights, 
+    insights,
     transactions, 
     setActiveTab, 
     setSelectedProductId,
@@ -114,9 +112,6 @@ export const DashboardView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
           <div>
             <h2 className="type-section-title text-slate-900">門市庫存健康度總覽</h2>
-            <p className="type-detail text-slate-500">
-              全店共管理 <span className="type-number text-slate-800 font-mono">{inventorySummary.totalSkus}</span> 項品項，分布於 <span className="type-number text-slate-800 font-mono">{brands.length}</span> 個品牌、<span className="type-number text-slate-800 font-mono">{suppliers.length}</span> 家常規供應商
-            </p>
           </div>
           <div className="type-detail text-slate-600 font-mono">
             總庫存價值 (進價)：NT$ <strong className="text-slate-800 font-bold">{formatNumber(inventorySummary.totalInventoryCost)}</strong>
