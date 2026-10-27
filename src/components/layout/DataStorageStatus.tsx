@@ -18,7 +18,7 @@ export const DataStorageStatus: React.FC<{ showReset?: boolean }> = ({ showReset
   };
 
   return (
-    <section aria-label="本機資料保存" className="feedback-scope fixed right-3 top-2 z-50 flex flex-col items-end gap-2">
+    <section aria-label="本機資料保存" className="feedback-scope fixed right-3 top-1.5 z-50 flex flex-col items-end gap-2">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

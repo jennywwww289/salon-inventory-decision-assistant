@@ -1465,7 +1465,7 @@ test('Step25 normal flow: production forms, Context and storage with independent
     sidebar.find(n => n.type === 'button' && text(n).includes('庫存管理動態')).props.onClick();
     roundTrip = () => {
       const before = JSON.stringify(core(ctx.read())), tab = ctx.read().activeTab;
-      elements(render()).find(n => n.type === 'button' && text(n) === '返回個人首頁')!.props.onClick();
+      elements(render()).find(n => n.props?.onBackToHome)!.props.onBackToHome();
       assert.ok(homeEntry());
       homeEntry()!.props.onEnterSystem();
       assert.ok(!homeEntry());
@@ -1969,7 +1969,7 @@ test('Step17 flow: five production component/Context flows with isolated storage
     sidebar.find(n => n.type === 'button' && text(n).includes('商品品項清單')).props.onClick();
     assert.ok(elements(render()).some(n => n.type === 'ProductsView'));
     const before = JSON.stringify(core(ctx.read()));
-    elements(render()).find(n => n.type === 'button' && text(n) === '返回個人首頁')!.props.onClick();
+    elements(render()).find(n => n.props?.onBackToHome)!.props.onBackToHome();
     assert.ok(homeEntry());
     homeEntry().props.onEnterSystem();
     assert.ok(elements(render()).some(n => n.type === 'ProductsView'));
@@ -2151,7 +2151,7 @@ test('Layout navigation: production App and Sidebar handlers close on selection 
   assert.equal(prevented, 1);
   assert.equal(find('HeaderBoundary').props.isNavigationOpen, false);
   assert.equal(focused, 2);
-  elements(render()).find(node => node.type === 'button' && text(node) === '返回個人首頁')!.props.onClick();
+  elements(render()).find(node => node.props?.onBackToHome)!.props.onBackToHome();
   assert.ok(find('HomeBoundary'));
   find('HomeBoundary').props.onEnterSystem();
   assert.equal(ctx.read().activeTab, 'products');
@@ -2165,12 +2165,16 @@ test('Layout header: native navigation and role controls handle clicks, Escape a
   }));
   let toggles = 0;
   let closes = 0;
+  let backs = 0;
   const props = {
+    onBackToHome() { backs++; },
     isNavigationOpen: false, onToggleNavigation() { toggles++; },
     onCloseNavigation() { closes++; }, navigationButtonRef: { current: null },
   };
   const ui = component('src/components/layout/Header.tsx', 'Header', ctx, props);
   const navigation = () => ui.find(node => node.type === 'button' && node.props['aria-controls'] === 'system-navigation');
+  ui.find(node => node.type === 'button' && text(node) === '返回個人首頁').props.onClick();
+  assert.equal(backs, 1);
   navigation().props.onClick();
   assert.equal(toggles, 1);
   props.isNavigationOpen = true;

@@ -1,15 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Bell, Sparkles, Plus, Store, Check, UserCheck, Menu } from 'lucide-react';
+import { Bell, Sparkles, Plus, Store, Check, UserCheck, Menu, ArrowLeft } from 'lucide-react';
 
 interface HeaderProps {
+  onBackToHome: () => void;
   isNavigationOpen: boolean;
   onToggleNavigation: () => void;
   onCloseNavigation: () => void;
   navigationButtonRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNavigation, onCloseNavigation, navigationButtonRef }) => {
+export const Header: React.FC<HeaderProps> = ({ onBackToHome, isNavigationOpen, onToggleNavigation, onCloseNavigation, navigationButtonRef }) => {
   const [isRoleSelectorOpen, setIsRoleSelectorOpen] = useState(false);
   const roleButtonRef = useRef<HTMLButtonElement>(null);
   const { 
@@ -38,9 +39,9 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
   };
 
   return (
-    <header className="min-w-0 border-b border-emerald-950/10 bg-white/95 backdrop-blur-md px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-3 lg:sticky lg:top-0 z-20">
-      {/* Zone 1: Brand title & Context */}
-      <div className="flex min-w-0 basis-full items-center gap-3 xl:basis-auto">
+    <header className="min-w-0 border-b border-emerald-950/10 bg-white/95 backdrop-blur-md pl-4 pr-16 py-1.5 sm:pl-6 sm:pr-[4.5rem] flex flex-wrap items-center justify-between gap-x-3 gap-y-2 lg:flex-nowrap lg:sticky lg:top-0 z-20">
+      {/* Zone 1: Back to home, brand title & Context */}
+      <div className="flex min-w-0 basis-full items-center gap-3 lg:basis-auto">
         <button
           type="button"
           ref={navigationButtonRef}
@@ -58,6 +59,16 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
         >
           <Menu size={20} />
         </button>
+        <nav aria-label="首頁與系統切換" className="shrink-0">
+          <button
+            type="button"
+            onClick={onBackToHome}
+            className="type-label flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-emerald-800 px-3 py-1.5 text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800 cursor-pointer"
+          >
+            <ArrowLeft size={15} aria-hidden="true" />
+            <span>返回個人首頁</span>
+          </button>
+        </nav>
         <div className="w-8 h-8 shrink-0 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold shadow-sm">
           <Store size={18} />
         </div>
@@ -67,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
             <span className="text-slate-300 font-light">/</span>
             <span className="type-detail font-medium text-emerald-800">{tabLabels[activeTab] || '決策支援中心'}</span>
           </div>
-          <div className="type-detail text-slate-600 hidden sm:block">
+          <div className="type-detail text-slate-600 hidden 2xl:block">
             <span>台北概念旗艦館</span>
             <span className="mx-1.5 text-slate-300">·</span>
             <span className="tabular-nums">{inventorySummary.totalSkus} SKUs 常備</span>
@@ -78,10 +89,13 @@ export const Header: React.FC<HeaderProps> = ({ isNavigationOpen, onToggleNaviga
       </div>
 
       {/* Zone 2: Navigation Links (Secondary / Quick Filters if needed or Breadcrumbs) */}
-      <div className="hidden lg:flex items-center gap-5 type-detail text-slate-600">
-        <span className="type-detail text-emerald-800/80 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 flex items-center gap-1.5">
+      <div className="hidden min-[1200px]:flex items-center gap-5 type-detail text-slate-600">
+        <span
+          title="課程原型：目前示範資料，未連接門市或 AI 服務"
+          className="type-detail whitespace-nowrap text-emerald-800/80 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100 flex items-center gap-1.5"
+        >
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          課程原型：目前示範資料，未連接門市或 AI 服務
+          課程原型：示範資料
         </span>
       </div>
 
