@@ -1805,7 +1805,13 @@ test('Storage reset UI: cancel is unchanged; confirm resets core/ref/session and
   let confirmed = false;
   const ui = runtime('src/components/layout/DataStorageStatus.tsx', { '../../context/AppContext': { useApp: ctx.read } }, false,
     { window: { confirm: () => confirmed } });
-  const click = () => elements(ui.render('DataStorageStatus', { showReset: true })).find(n => n.type === 'button')!.props.onClick();
+  const render = () => elements(ui.render('DataStorageStatus', { showReset: true }));
+  const resetButton = () => render().find(n => n.type === 'button' && text(n) === '重設示範資料');
+  const click = () => {
+    // 保存狀態是右上角小方塊，預設收合；先展開再按「重設示範資料」
+    if (!resetButton()) render().find(n => n.type === 'button' && n.props['aria-label'] === '本機資料保存狀態')!.props.onClick();
+    resetButton()!.props.onClick();
+  };
   const before = ctx.snapshot(), raw = storage.values.get(localData.STORAGE_KEY), count = storage.writes.length;
   click();
   assert.equal(ctx.snapshot(), before);
