@@ -2,7 +2,6 @@ import type { InventoryTransaction, Product } from '../types';
 import { validateMovementInput, validationFailure, type MovementInput, type ValidationResult } from './validation';
 
 import { withInventoryStatus } from './inventoryCalculations';
-export { calculateInventoryStatus } from './inventoryCalculations';
 
 export interface InventoryState {
   products: Product[];

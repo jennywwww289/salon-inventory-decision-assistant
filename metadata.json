@@ -1,8 +1,0 @@
-{
-  "name": "Remix 綠境庫存｜沙龍門市決策與倉管小幫手",
-  "description": "專為沙龍與小型服務型店家設計的商業決策與智能庫存管理平台。從數據、洞察、預測到決策行動，解決缺貨與資金積壓難題。",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}

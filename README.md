@@ -78,14 +78,9 @@ tests/                      # node:test 測試
 docs/                       # 開發日誌、測試報告、設計研究與前後對照截圖
 ```
 
-## 環境變數
-
-`.env.example` 列出 `GEMINI_API_KEY` 與 `APP_URL`，是從 Google AI Studio 匯出時帶來的範本。**目前程式碼沒有用到任何一個**，不設定也能正常執行。
-
 ## 已知限制
 
 - 資料只存在使用者目前的瀏覽器，換瀏覽器或清除網站資料就會消失。
 - AI 建議為靜態範例，未依實際庫存即時產生。
 - 通知（LINE／Email）只會在畫面上產生一則紀錄，不會真的發送。
 - 角色不影響任何功能權限。
-- `package.json` 裡的 `@google/genai`、`express`、`dotenv`、`motion`、`autoprefixer` 目前沒有被程式碼引用。

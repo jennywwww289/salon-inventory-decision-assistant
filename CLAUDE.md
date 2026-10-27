@@ -38,9 +38,8 @@ node --import tsx --test --test-name-pattern 'Context permits zero stock' \
 
 ## 容易誤判的地方
 
-- **「AI 決策建議」是靜態範例**（`INITIAL_AI_INSIGHTS`）。`@google/genai`、`express`、`dotenv`、`motion`、`autoprefixer` 已列在依賴但沒被引用，也沒有 server 程式；不要假設已有 AI 後端。
+- **「AI 決策建議」是靜態範例**（`INITIAL_AI_INSIGHTS`），沒有 AI 後端也沒有 server 程式。
 - 角色（Owner／Manager／Staff）沒有任何權限判斷；LINE／Email 通知只是在畫面新增一筆 `NotificationAlert`，不會真的發送。
-- `vite.config.ts` 的 `DISABLE_HMR` 區塊、`metadata.json`、`.env.example` 是 Google AI Studio 範本殘留，目前沒有功能用途。
 - 資料只在瀏覽器 localStorage（key `henry-yan.salon-inventory.core`）；測試或手動驗證時，舊快照可能讓畫面和範例資料不同，先用畫面上的「重設示範資料」。
 
 ## 專案紀錄與公開版本注意事項
