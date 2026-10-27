@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
+  /* 頁面背景色都是半透明，底下要有實色，否則瀏覽器深色模式會透出深灰底 */
+  html {
+    background-color: #fff;
+    color-scheme: light;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
@@ -33,7 +39,7 @@
   min-width: 48rem;
 }
 
-.table-scroll th {
+.table-scroll :is(th, td) {
   white-space: nowrap;
 }
 
@@ -47,10 +53,6 @@
 
 .inventory-table :is(th, td):nth-child(2) {
   min-width: 9rem;
-}
-
-.inventory-table td:not(:first-child) {
-  white-space: nowrap;
 }
 
 .modal-overlay {

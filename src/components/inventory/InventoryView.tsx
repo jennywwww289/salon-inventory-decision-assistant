@@ -281,7 +281,7 @@ export const InventoryView: React.FC = () => {
                         <div className="font-bold text-slate-900 group-hover:text-emerald-900 transition-colors">
                           {p.name}
                         </div>
-                        <div className="type-detail text-slate-600 flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <div className="type-detail text-slate-600 flex items-center gap-1.5 mt-0.5">
                           <span className="font-mono">{p.sku}</span>
                           <span>·</span>
                           <span>{p.spec}</span>
