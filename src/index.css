@@ -55,6 +55,33 @@
   min-width: 9rem;
 }
 
+/* 按鈕、連結、徽章、標籤、標題等短文字一律單行，不自動換行。
+   需要長段落換行的文字請放在 <p>，或在元素上加 .wrap-text。 */
+.system-shell :is(button, a, h3, h4, .type-label, .type-status, .type-item-title),
+.system-shell span:not(p span, .wrap-text) {
+  white-space: nowrap;
+}
+
+/* 名稱太長時單行省略；滑鼠移上去展開完整文字（title 屬性供鍵盤與觸控使用）。 */
+.truncate-reveal {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.truncate-reveal:hover {
+  position: relative;
+  z-index: 30;
+  width: max-content;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+  background: #fff;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 0.18);
+}
+
 .modal-overlay {
   overflow-y: auto;
 }

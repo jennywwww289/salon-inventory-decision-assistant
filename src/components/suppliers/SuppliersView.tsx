@@ -123,14 +123,14 @@ export const SuppliersView: React.FC = () => {
           {suppliers.flatMap(s => (s.promotions || []).map(p => ({ ...p, supplier: s }))).map(promo => (
             <div key={promo.id} className="bg-white border border-emerald-900/10 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-1.5">
                   <span className="type-detail font-bold text-emerald-800">{promo.title}</span>
                   <span className="type-number font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
                     現折 {Math.round(promo.discountRate * 100)}%
                   </span>
                 </div>
                 <p className="type-detail text-slate-600 mb-2">{promo.description}</p>
-                <div className="type-detail text-slate-600 font-mono flex items-center gap-3">
+                <div className="type-detail text-slate-600 font-mono flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span>供應商：{promo.supplier.name}</span>
                   <span>·</span>
                   <span>起訂門檻：{promo.minOrderQty} 瓶</span>
@@ -168,7 +168,7 @@ export const SuppliersView: React.FC = () => {
               className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-300 feedback-card"
             >
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
                   <span className="type-detail font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded">
                     {s.paymentTerms}
                   </span>
@@ -177,31 +177,31 @@ export const SuppliersView: React.FC = () => {
                   </span>
                 </div>
 
-                <h3 className="type-item-title text-slate-900 mb-1">{s.name}</h3>
+                <h3 title={s.name} className="type-item-title truncate-reveal text-slate-900 mb-1">{s.name}</h3>
                 <div className="type-detail text-slate-600 space-y-1 mb-4">
-                  <div className="flex items-center gap-1.5">
-                    <Phone size={13} className="text-slate-400" />
-                    <span>{s.contactPerson} ({s.phone})</span>
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <Phone size={13} className="shrink-0 text-slate-400" />
+                    <span title={`${s.contactPerson} (${s.phone})`} className="truncate-reveal">{s.contactPerson} ({s.phone})</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Mail size={13} className="text-slate-400" />
-                    <span className="break-words whitespace-normal">{s.email}</span>
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <Mail size={13} className="shrink-0 text-slate-400" />
+                    <span title={s.email} className="truncate-reveal">{s.email}</span>
                   </div>
                 </div>
 
                 {/* Key Operating Terms */}
-                <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl type-detail font-mono mb-4 border border-slate-100">
-                  <div>
-                    <span className="text-slate-600 block type-detail font-sans">交貨前置期 (Lead)</span>
+                <div className="space-y-1.5 bg-slate-50 p-3 rounded-xl type-detail font-mono mb-4 border border-slate-100">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-slate-600 type-detail font-sans">交貨前置期 (Lead)</span>
                     <span className="font-bold text-slate-900 type-detail">{s.defaultLeadTime} 天</span>
                   </div>
-                  <div>
-                    <span className="text-slate-600 block type-detail font-sans">最小起訂量 (MOQ)</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-slate-600 type-detail font-sans">最小起訂量 (MOQ)</span>
                     <span className="font-bold text-slate-900 type-detail">{s.moq} 瓶/件</span>
                   </div>
                 </div>
 
-                <div className="type-detail text-slate-600 mb-4">
+                <div title={`代理供應品牌：${suppliedBrandNames || '全品項代理'}`} className="type-detail truncate-reveal text-slate-600 mb-4">
                   <span className="font-semibold text-slate-700">代理供應品牌：</span>
                   <span className="text-emerald-900">{suppliedBrandNames || '全品項代理'}</span>
                 </div>

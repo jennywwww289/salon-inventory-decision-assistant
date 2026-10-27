@@ -100,7 +100,7 @@ export const BrandsView: React.FC = () => {
       </div>
 
       {/* 2. Brand Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
         {brandStats.map(stat => {
           const isTrendPositive = stat.trend >= 0;
           return (
@@ -109,7 +109,7 @@ export const BrandsView: React.FC = () => {
               className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-300 feedback-card"
             >
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col items-start gap-1.5 mb-2">
                   <span className="type-detail font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
                     {stat.brand.origin} · {stat.skuCount} SKUs
                   </span>
@@ -121,24 +121,24 @@ export const BrandsView: React.FC = () => {
                   </div>
                 </div>
 
-                <h3 className="type-item-title text-slate-900 mb-1">{stat.brand.name}</h3>
+                <h3 title={stat.brand.name} className="type-item-title truncate-reveal text-slate-900 mb-1">{stat.brand.name}</h3>
                 <p className="type-detail text-slate-600 break-words whitespace-normal mb-4">{stat.brand.description}</p>
 
                 {/* Metrics Breakdown */}
                 <div className="space-y-2 bg-slate-50/80 p-3 rounded-xl type-detail font-mono mb-4 border border-slate-100">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-3">
                     <span className="text-slate-600 font-sans">月需求金額試算：</span>
                     <span className="font-bold text-slate-900">
                       NT$ {Math.round(stat.estimatedMonthlyRevenue).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-3">
                     <span className="text-slate-600 font-sans">庫存成本金額：</span>
                     <span className="font-bold text-slate-800">
                       NT$ {stat.totalInventoryValue.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-3">
                     <span className="text-slate-600 font-sans">年週轉試算：</span>
                     <span className="font-bold text-emerald-800">
                       {stat.turnoverRate} 次/年

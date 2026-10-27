@@ -140,13 +140,13 @@ export const UsersView: React.FC = () => {
 
                 {/* Permissions summary */}
                 <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 type-detail text-slate-600 space-y-1 mb-4">
-                  <div className="font-semibold text-slate-700 type-detail uppercase tracking-wider mb-1">
+                  <div className="font-semibold text-slate-700 type-detail uppercase tracking-wider whitespace-nowrap mb-1">
                     角色職責示意（非權限限制）：
                   </div>
                   {roleDescriptions[u.role]?.responsibilities.map((p, idx) => (
-                    <div key={idx} className="flex items-center gap-1">
-                      <span className="text-emerald-600">✓</span>
-                      <span>{p}</span>
+                    <div key={idx} className="flex min-w-0 items-center gap-1">
+                      <span className="shrink-0 text-emerald-600">✓</span>
+                      <span title={p} className="truncate-reveal">{p}</span>
                     </div>
                   ))}
                 </div>

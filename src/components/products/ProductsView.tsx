@@ -126,17 +126,15 @@ export const ProductsView: React.FC = () => {
                   <div className="type-detail text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
                     {p.brandName}
                   </div>
-                  <span className="type-detail font-mono text-slate-400">{p.sku}</span>
+                  <span className="type-detail font-mono text-slate-400 shrink-0">{p.sku}</span>
                 </div>
 
-                <h3 className="type-item-title text-slate-900 group-hover:text-emerald-900 transition-colors break-words whitespace-normal mb-1">
+                <h3 title={p.name} className="type-item-title truncate-reveal text-slate-900 group-hover:text-emerald-900 transition-colors mb-1">
                   {p.name}
                 </h3>
 
-                <div className="type-detail text-slate-500 flex items-center gap-2 mb-3">
-                  <span>規格：{p.spec}</span>
-                  <span>·</span>
-                  <span>{p.category}</span>
+                <div title={`規格：${p.spec} · ${p.category}`} className="type-detail truncate-reveal text-slate-500 mb-3">
+                  規格：{p.spec} · {p.category}
                 </div>
 
                 {/* Price and Stock Stats */}
@@ -160,11 +158,11 @@ export const ProductsView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between type-detail">
-                <span className="text-slate-500 type-detail break-words whitespace-normal max-w-[170px]">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3 type-detail">
+                <span title={`供應商：${p.supplierName}`} className="text-slate-500 type-detail truncate-reveal">
                   供應商：{p.supplierName}
                 </span>
-                <span className="text-emerald-800 font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                <span className="text-emerald-800 font-semibold flex shrink-0 items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   <span>詳情帳本</span>
                   <ChevronRight size={14} />
                 </span>

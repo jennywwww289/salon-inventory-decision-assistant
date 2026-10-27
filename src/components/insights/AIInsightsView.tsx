@@ -238,11 +238,11 @@ export const AIInsightsView: React.FC = () => {
               </div>
 
               {/* Action Buttons & Human Adjustments */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-slate-100">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pt-3 border-t border-slate-100">
                 {/* Human decision controls */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {modifyingInsightId === insight.id ? (
-                    <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl type-detail">
+                    <div className="flex flex-wrap items-center gap-2 bg-slate-100 p-1.5 rounded-xl type-detail">
                       <span className="text-slate-600 font-medium">調整採購量：</span>
                       <input
                         type="number"
@@ -312,14 +312,14 @@ export const AIInsightsView: React.FC = () => {
                 </div>
 
                 {/* Feedback Loop Mechanism */}
-                <div className="flex items-center gap-3 type-detail border-t sm:border-t-0 pt-2 sm:pt-0">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 type-detail">
                   {insight.feedback ? (
                     <div className="text-slate-400 type-detail flex items-center gap-1">
                       <CheckCircle2 size={13} className="text-emerald-600" />
                       <span>已記錄示範回饋：{insight.feedback.isHelpful ? '有幫助' : `不實用 (${insight.feedback.reason})`}</span>
                     </div>
                   ) : feedbackPromptId === insight.id ? (
-                    <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200 type-detail">
+                    <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 p-1.5 rounded-lg border border-slate-200 type-detail">
                       <span className="text-slate-500">不實用原因：</span>
                       {[
                         { id: 'Too conservative', label: '太保守' },

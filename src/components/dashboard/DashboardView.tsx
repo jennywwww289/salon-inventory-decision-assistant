@@ -197,16 +197,17 @@ export const DashboardView: React.FC = () => {
           {/* 01 — Critical Stock Risk */}
           <div className="bg-white border-2 border-rose-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-rose-300 feedback-card">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="type-detail font-bold text-rose-700 tracking-wider">
-                  01 — 斷貨危機 (CRITICAL STOCK RISK)
-                </span>
-                <span className="type-detail font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded">
+              <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-3">
+                <div>
+                  <span className="type-detail font-bold text-rose-700 tracking-wider block">01 — 斷貨危機</span>
+                  <span className="type-detail text-rose-700 opacity-80 tracking-wider block">CRITICAL STOCK RISK</span>
+                </div>
+                <span className="type-detail font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded shrink-0">
                   需立即決策
                 </span>
               </div>
 
-              <h3 className="type-item-title text-slate-900 mb-1">
+              <h3 title={criticalProduct?.name} className="type-item-title truncate-reveal text-slate-900 mb-1">
                 {criticalProduct?.name ?? '尚無對應商品'}
               </h3>
               <p className="type-detail text-slate-500 mb-4">
@@ -218,25 +219,25 @@ export const DashboardView: React.FC = () => {
               </p>
 
               {/* Data signals */}
-              <div className="grid grid-cols-2 gap-2 type-detail bg-rose-50/50 p-3 rounded-xl border border-rose-100 mb-4 font-mono">
-                <div>
-                  <span className="text-slate-500 block type-detail">現有庫存</span>
+              <div className="space-y-1.5 type-detail bg-rose-50/50 p-3 rounded-xl border border-rose-100 mb-4 font-mono">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">現有庫存</span>
                   <span className="font-bold text-rose-700 type-detail">
                     {criticalProduct?.stock ?? '—'} 瓶
                   </span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">每週平均需求</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">每週平均需求</span>
                   <span className="font-bold text-slate-800 type-detail">
                     {criticalProduct?.weeklyDemand ?? '—'} 瓶
                   </span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">預估剩餘天數</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">預估剩餘天數</span>
                   <span className="font-bold text-rose-600 type-detail">{criticalProduct ? formatCoverage(criticalProduct.stock, criticalProduct.weeklyDemand, '天', 7) : '無法估算'}</span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">供應商交期 / MOQ</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">供應商交期 / MOQ</span>
                   <span className="font-bold text-slate-800 type-detail">
                     {criticalProduct?.leadTime ?? '—'} 天 / {criticalProduct?.moq ?? '—'} 瓶
                   </span>
@@ -275,16 +276,17 @@ export const DashboardView: React.FC = () => {
           {/* 02 — Overstock Risk */}
           <div className="bg-white border border-amber-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-amber-300 feedback-card">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="type-detail font-bold text-amber-800 tracking-wider">
-                  02 — 庫存積壓警示 (OVERSTOCK RISK)
-                </span>
-                <span className="type-detail font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
+              <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-3">
+                <div>
+                  <span className="type-detail font-bold text-amber-800 tracking-wider block">02 — 庫存積壓警示</span>
+                  <span className="type-detail text-amber-800 opacity-80 tracking-wider block">OVERSTOCK RISK</span>
+                </div>
+                <span className="type-detail font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded shrink-0">
                   資金呆滯
                 </span>
               </div>
 
-              <h3 className="type-item-title text-slate-900 mb-1">
+              <h3 title={overstockProduct?.name} className="type-item-title truncate-reveal text-slate-900 mb-1">
                 {overstockProduct?.name ?? '尚無對應商品'}
               </h3>
               <p className="type-detail text-slate-500 mb-4">
@@ -294,25 +296,25 @@ export const DashboardView: React.FC = () => {
               </p>
 
               {/* Data signals */}
-              <div className="grid grid-cols-2 gap-2 type-detail bg-amber-50/50 p-3 rounded-xl border border-amber-100 mb-4 font-mono">
-                <div>
-                  <span className="text-slate-500 block type-detail">現有庫存</span>
+              <div className="space-y-1.5 type-detail bg-amber-50/50 p-3 rounded-xl border border-amber-100 mb-4 font-mono">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">現有庫存</span>
                   <span className="font-bold text-amber-900 type-detail">
                     {overstockProduct?.stock ?? '—'} 瓶
                   </span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">平均月需求</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">平均月需求</span>
                   <span className="font-bold text-slate-800 type-detail">
                     {overstockProduct?.monthlyDemand ?? '—'} 瓶
                   </span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">庫存覆蓋時間</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">庫存覆蓋時間</span>
                   <span className="font-bold text-amber-800 type-detail">{overstockProduct ? formatCoverage(overstockProduct.stock, overstockProduct.monthlyDemand, '個月') : '無法估算'}</span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">卡死資金成本</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">卡死資金成本</span>
                   <span className="font-bold text-slate-800 type-detail">
                     NT$ {overstockProduct ? formatNumber(overstockProduct.stock * overstockProduct.unitCost) : '—'}
                   </span>
@@ -345,40 +347,41 @@ export const DashboardView: React.FC = () => {
           {/* 03 — Purchasing Opportunity */}
           <div className="bg-emerald-900/5 border border-emerald-900/20 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-700/40 feedback-card relative overflow-hidden">
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="type-detail font-bold text-emerald-800 tracking-wider">
-                  03 — 採購商機 (PURCHASING OPPORTUNITY)
-                </span>
-                <span className="type-detail font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+              <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-3">
+                <div>
+                  <span className="type-detail font-bold text-emerald-800 tracking-wider block">03 — 採購商機</span>
+                  <span className="type-detail text-emerald-800 opacity-80 tracking-wider block">PURCHASING OPPORTUNITY</span>
+                </div>
+                <span className="type-detail font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded shrink-0">
                   固定促銷示例
                 </span>
               </div>
 
-              <h3 className="type-item-title text-slate-900 mb-1">
+              <h3 title="沛森生化「艾瑪絲夏季促銷」現折 8%" className="type-item-title truncate-reveal text-slate-900 mb-1">
                 沛森生化「艾瑪絲夏季促銷」現折 8%
               </h3>
-              <p className="type-detail text-slate-500 mb-4">
+              <p title="供應商：沛森生化物流 · 滿 30 瓶即享批發折扣" className="type-detail truncate-reveal text-slate-500 mb-4">
                 <span>供應商：沛森生化物流</span>
                 <span className="mx-1">·</span>
                 <span>滿 30 瓶即享批發折扣</span>
               </p>
 
               {/* Data signals */}
-              <div className="grid grid-cols-2 gap-2 type-detail bg-white/80 p-3 rounded-xl border border-emerald-900/10 mb-4 font-mono">
-                <div>
-                  <span className="text-slate-500 block type-detail">示例截止日（非倒數）</span>
+              <div className="space-y-1.5 type-detail bg-white/80 p-3 rounded-xl border border-emerald-900/10 mb-4 font-mono">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">示例截止日（非倒數）</span>
                   <span className="font-bold text-emerald-800 type-detail">10 月 15 日</span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">進貨成本優惠</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">進貨成本優惠</span>
                   <span className="font-bold text-emerald-800 type-detail">現折 8.0%</span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">適用低水位品項</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">適用低水位品項</span>
                   <span className="font-bold text-slate-800 type-detail">ARM-001, 002</span>
                 </div>
-                <div>
-                  <span className="text-slate-500 block type-detail">預估節省成本</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-slate-500 type-detail">預估節省成本</span>
                   <span className="font-bold text-emerald-700 type-detail">約 NT$ 1,450</span>
                 </div>
               </div>
@@ -413,7 +416,7 @@ export const DashboardView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Urgent Action Products */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-4">
             <div>
               <h3 className="type-item-title text-slate-900">需立即排單補貨的商品 (CRITICAL LIST)</h3>
               <p className="type-detail text-slate-500">依目前庫存、補貨點與週需求的共用規則判定；覆蓋量為試算</p>
@@ -432,9 +435,9 @@ export const DashboardView: React.FC = () => {
               const coverageWeeks = formatCoverage(p.stock, p.weeklyDemand, '週');
               return (
                 <div key={p.id} className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 p-2 rounded-lg transition-colors">
-                  <div>
-                    <div className="font-semibold type-detail text-slate-900">{p.name}</div>
-                    <div className="type-detail text-slate-500 flex items-center gap-1.5 mt-0.5">
+                  <div className="min-w-0">
+                    <div title={p.name} className="font-semibold type-detail truncate-reveal text-slate-900">{p.name}</div>
+                    <div className="type-detail text-slate-500 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5">
                       <span>{p.brandName}</span>
                       <span>·</span>
                       <span className="font-mono">{p.sku}</span>
@@ -466,7 +469,7 @@ export const DashboardView: React.FC = () => {
 
         {/* Recent Ledger Movements (取代紙本日誌的實體帳本) */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-4">
             <div>
               <h3 className="type-item-title text-slate-900">最新出入庫異動帳本 (RECENT MOVEMENTS)</h3>
               <p className="type-detail text-slate-500">目前示範資料的異動紀錄，含初始歷史示例</p>
@@ -485,10 +488,10 @@ export const DashboardView: React.FC = () => {
               return (
                 <div key={tx.id} className="py-2.5 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-2 rounded-lg transition-colors">
                   <div className="min-w-0">
-                    <div className="font-sans font-medium type-detail text-slate-900 break-words whitespace-normal">
+                    <div title={tx.productName} className="font-sans font-medium type-detail truncate-reveal text-slate-900">
                       {tx.productName}
                     </div>
-                    <div className="type-detail text-slate-500 flex items-center gap-2 mt-0.5">
+                    <div className="type-detail text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                       <span>{tx.timestamp.split(' ')[0]}</span>
                       <span>·</span>
                       <span className="text-slate-700 font-semibold">{tx.userName}</span>

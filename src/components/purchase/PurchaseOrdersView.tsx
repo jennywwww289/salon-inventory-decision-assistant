@@ -96,19 +96,19 @@ export const PurchaseOrdersView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 type-detail">
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
             <span className="font-bold text-slate-800 block mb-0.5">1. 建立採購草稿</span>
-            <span className="text-slate-500 type-detail">手動輸入、固定建議示例或既有公式試算</span>
+            <span className="wrap-text text-slate-500 type-detail">手動輸入、固定建議示例或既有公式試算</span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
             <span className="font-bold text-slate-800 block mb-0.5">2. 核准草稿</span>
-            <span className="text-slate-500 type-detail">建單前確認數量；目前無已建單編輯或角色限制</span>
+            <span className="wrap-text text-slate-500 type-detail">建單前確認數量；目前無已建單編輯或角色限制</span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
             <span className="font-bold text-slate-800 block mb-0.5">3. 標記已向供應商下單</span>
-            <span className="text-slate-500 type-detail">只更新示範狀態及在途量，不會送單或安排物流</span>
+            <span className="wrap-text text-slate-500 type-detail">只更新示範狀態及在途量，不會送單或安排物流</span>
           </div>
           <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200">
             <span className="font-bold text-emerald-900 block mb-0.5">4. 到貨驗收一鍵入庫</span>
-            <span className="text-emerald-700 type-detail">庫存自動增加，並於帳本寫入進貨紀錄</span>
+            <span className="wrap-text text-emerald-700 type-detail">庫存自動增加，並於帳本寫入進貨紀錄</span>
           </div>
         </div>
       </div>
@@ -347,7 +347,7 @@ export const PurchaseOrdersView: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="py-12 text-center text-slate-400 type-detail">
+            <div className="py-12 text-center text-slate-400 type-detail whitespace-nowrap">
               請從左側點選任一採購單檢視詳細明細與佐證。
             </div>
           )}
