@@ -191,10 +191,10 @@ export const AIInsightsView: React.FC = () => {
                 <span>品牌：{insight.brandName}</span>
               </div>
 
-              {/* Four Dimension Explanation Box */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 mb-5 type-detail">
+              {/* Explanation boxes: reason and scenario stacked as two separate blocks */}
+              <div className="space-y-4 mb-5 type-detail">
                 {/* 為什麼會發生？佐證數據 */}
-                <div>
+                <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
                   <h3 className="type-item-title text-slate-800 mb-1 flex items-center gap-1.5">
                     <Info size={14} className="text-emerald-800" />
                     <span>原因與數值示意（固定內容）</span>
@@ -214,7 +214,7 @@ export const AIInsightsView: React.FC = () => {
                 </div>
 
                 {/* 預估可能後果與行動方案 */}
-                <div>
+                <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
                   <h3 className="type-item-title text-slate-800 mb-1 flex items-center gap-1.5">
                     <TrendingUp size={14} className="text-emerald-800" />
                     <span>後續情境示意（非實際預測）</span>
@@ -230,7 +230,7 @@ export const AIInsightsView: React.FC = () => {
                     <p className="type-body text-slate-800 font-medium leading-relaxed">
                       {insight.recommendation}
                     </p>
-                    <div className="type-number mt-2 text-emerald-800 font-mono">
+                    <div className="type-detail font-bold mt-2 text-emerald-800 font-mono">
                       效益示意（未驗證）：{insight.potentialImpact}
                     </div>
                   </div>
