@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-沙龍門市庫存與補貨決策平台，目前是**純前端原型**。功能清單、庫存狀態門檻與啟動方式見 `README.md`，這裡只放改程式時需要的資訊。
+沙龍門市庫存與補貨決策平台，**展示原型**，外加一個個人作品首頁。功能清單、庫存狀態門檻與啟動方式見 `README.md`，這裡只放改程式時需要的資訊。
 
 ## 指令
 
@@ -10,34 +10,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev      # 開發伺服器，port 3000（--host=0.0.0.0）
 npm run lint     # tsc --noEmit，型別檢查
 npm run build    # vite build → dist/
+node --import tsx --test tests/*.test.ts                      # 全部測試（221 個，目前全過）
+node --import tsx --test --test-name-pattern 'Context permits zero stock' \
+  tests/dataValidation.test.ts                                # 單一測試（名稱符合者）
 ```
 
+- `--test-name-pattern` 必須放在檔名**前面**，放後面會被忽略而跑完整個檔案。
+
 - Node 需 `^20.19.0 || >=22.12.0`（Vite 8 的要求）。
-- **沒有測試框架**，沒有單一測試可跑；改完以 `lint` + `build` 驗證（目前兩者皆通過）。`build` 會印出 `__dirname` 的 Vite 警告，無害。
+- 測試用 Node 內建 `node:test`，經 `tsx` 載入 TypeScript；`package.json` 沒有 `test` script，所以 `tsx` 看似沒被 import 但**不可移除**。
+- 改完以 `lint`、`build`、測試三者驗證。`build` 會印出 `__dirname` 的 Vite 警告，無害。
 
 ## 架構
 
-單一 React Context 驅動整個 App，沒有 router、後端或持久化：
+**業務規則在 `src/utils/`（純函式、不依賴 React），`AppContext` 只負責狀態、呼叫這些函式與持久化。** 改規則請改 utils 並補測試，不要在元件裡重寫。
 
-- `src/context/AppContext.tsx`：所有狀態（users、brands、suppliers、products、transactions、purchaseOrders、insights、notifications）、UI 狀態（`activeTab`、`selectedProductId`、兩個全域彈窗開關）與所有動作都在這裡。元件一律透過 `useApp()` 取用。
-- `src/App.tsx`：依 `activeTab` 字串條件渲染頁面。新增頁面要同時改 `components/layout/Sidebar.tsx` 的選單與這裡。
-- `src/data/mockData.ts`：唯一資料來源（約 2500 行）。商品由 `RAW_PRODUCTS_LIST` 加 `bonusSeeds` 組成 100 筆 SKU。
-- `src/types/index.ts`：所有型別；新增欄位先改這裡。
+- `validation.ts`：所有輸入檢查，回傳 `ValidationResult`（`{ ok: true, value }` 或 `{ ok: false, errors }`）。元件顯示 errors，不自行判斷。
+- `inventoryMovement.ts` 的 `applyInventoryMovement`：**唯一會改庫存的地方**。庫存會變負的出庫直接拒絕，並同步寫入帳本、重算商品狀態。
+- `purchaseOrder.ts` 的 `transitionPurchaseOrder`：採購單狀態機 `Draft → Approved → Ordered → Received`，任一非終點狀態可 `Cancelled`；`Ordered` 只增加在途量 `incomingQty`，`Received` 才呼叫 `applyInventoryMovement` 入庫。重複驗收會被拒絕。
+- `inventoryCalculations.ts`：庫存狀態規則（`calculateInventoryStatus`）、統計與警示。範例資料裡寫死的 `status` 不是規則，載入時由 `withInventoryStatus` 重算。
+- `localData.ts`：localStorage 快照的載入、保存、驗證與重設示範資料。`validateCoreData` 用欄位白名單，未知欄位不會被保存。快照格式有版本（`STORAGE_VERSION`），改資料結構時要一併處理舊快照。
+- `AppContext.tsx`：每個指令（`recordTransaction`、`createPurchaseOrder`、`updatePOStatus`、`addProduct`…）先驗證，成功才更新狀態並保存。**直接更新商品的 `stock` 會被拒絕**，必須走盤點調整，帳本才一致。重設示範資料會遞增 `dataRevision`，`App.tsx` 用它當 `key` 讓整個系統區重新掛載。
+- `App.tsx`：`area` 在個人首頁（`home`）與系統（`system`）之間切換；系統內沒有 router，靠 context 的 `activeTab` 切頁。新增頁面要同時改 `components/layout/Sidebar.tsx` 的選單與 `App.tsx`。
+- 型別全在 `src/types/index.ts`；`src/data/mockData.ts` 是範例資料（約 2500 行）。
 
-### 跨檔案的資料流
-
-- **庫存異動只有兩個入口**：`ServiceUsageModal`（全域彈窗，Header／Dashboard／Inventory 都能開）與 `ProductDetailModal`（由 context 的 `selectedProductId` 開啟），兩者都呼叫 `recordTransaction`。它會同時更新商品庫存與狀態、寫入帳本，並在變成 Critical／Low 時產生一筆通知。
-- **採購單有四個建立入口**：`NewPOModal`、`DashboardView`、`ProductDetailModal`、`AIInsightsView`，都呼叫 `createPurchaseOrder`（一律建立為 `Draft`）。AI 建議頁的 `handleCreatePOFromInsight` 還會呼叫 `respondToInsight` 把建議標為 Accepted／Modified，再 `setActiveTab('purchase')`。
-- **採購單狀態轉換有副作用**（`updatePOStatus`）：轉 `Ordered` 只增加商品的 `incomingQty`；轉 `Received` 才會增加庫存、扣掉 `incomingQty`、寫入 `Purchase` 帳本並發通知。
+庫存異動入口：`ServiceUsageModal`（全域彈窗）與 `ProductDetailModal`（由 `selectedProductId` 開啟），都經 `recordTransaction`。採購單建立入口有 `NewPOModal`、`DashboardView`、`ProductDetailModal`、`AIInsightsView`，都經 `createPurchaseOrder`（一律先是 `Draft`）。
 
 ## 容易誤判的地方
 
-- **商品 `status` 不是即時算出來的。** 範例資料的 `status` 是寫死的；`calculateStatus` 只在 `recordTransaction` 與採購單入庫時重算。`addProduct`、`updateProduct`（例如改補貨點）**不會**重算狀態，因此畫面上的狀態可能和 README 的門檻不一致。
-- **「AI 決策建議」是靜態範例**（`INITIAL_AI_INSIGHTS`），不是即時運算。`@google/genai`、`express`、`dotenv`、`motion` 已列在 dependencies，但 `src/` 完全沒有引用，也沒有 server 程式；不要假設已有 AI 後端。
-- 角色（Owner／Manager／Staff）沒有任何權限判斷，只用於顯示與記錄經手人。
-- LINE／Email 通知只是在畫面新增一筆 `NotificationAlert`，不會真的發送。
-- `vite.config.ts` 的 `DISABLE_HMR` 區塊是 Google AI Studio 留下的，本機開發用不到。`.env.example` 同樣來自 AI Studio，內容目前無任何程式使用。
-- ID 以 `Date.now()` 產生（如 `tx-${Date.now()}`、`prod-${Date.now()}`），同一毫秒內連續呼叫可能重複。
+- **「AI 決策建議」是靜態範例**（`INITIAL_AI_INSIGHTS`）。`@google/genai`、`express`、`dotenv`、`motion`、`autoprefixer` 已列在依賴但沒被引用，也沒有 server 程式；不要假設已有 AI 後端。
+- 角色（Owner／Manager／Staff）沒有任何權限判斷；LINE／Email 通知只是在畫面新增一筆 `NotificationAlert`，不會真的發送。
+- `vite.config.ts` 的 `DISABLE_HMR` 區塊、`metadata.json`、`.env.example` 是 Google AI Studio 範本殘留，目前沒有功能用途。
+- 資料只在瀏覽器 localStorage（key `henry-yan.salon-inventory.core`）；測試或手動驗證時，舊快照可能讓畫面和範例資料不同，先用畫面上的「重設示範資料」。
+
+## 專案紀錄與公開版本注意事項
+
+- `docs/` 是這個版本的**開發過程證據**（開發日誌、測試報告、設計研究、AI 對話紀錄、前後對照截圖，約 4.5MB），不是多餘檔案。未經使用者同意，不要刪除或精簡。
+- 公開版本已把原作者的聯絡信箱換成佔位字 `your-email@example.com`（`PersonalHome.tsx`、`tests/`、`docs/` 都是），並且改寫過 commit 作者信箱。**不要把真實信箱寫回去**；改信箱要同步改 `tests/copyEmail.test.ts` 與 `tests/dataValidation.test.ts` 裡的預期值。
+- 新版的 commit 作者是 Henry Yan（信箱為佔位字 `noreply@example.invalid`），這是刻意保留署名；不要重寫掉。
 
 ## 慣例
 
