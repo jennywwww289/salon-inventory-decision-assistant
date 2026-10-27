@@ -192,14 +192,12 @@ export const DashboardView: React.FC = () => {
           {/* 01 — Critical Stock Risk */}
           <div className="bg-white border-2 border-rose-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-rose-300 feedback-card">
             <div>
-              <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-3">
-                <div>
-                  <span className="type-detail font-bold text-rose-700 tracking-wider block">01 — 斷貨危機</span>
-                  <span className="type-detail text-rose-700 opacity-80 tracking-wider block">CRITICAL STOCK RISK</span>
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="type-detail font-bold text-rose-700 tracking-wider">01 — 斷貨危機</span>
+                  <span className="type-detail font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded shrink-0">需立即決策</span>
                 </div>
-                <span className="type-detail font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded shrink-0">
-                  需立即決策
-                </span>
+                <span className="type-detail text-rose-700 opacity-80 tracking-wider block">CRITICAL STOCK RISK</span>
               </div>
 
               <h3 title={criticalProduct?.name} className="type-item-title truncate-reveal text-slate-900 mb-1">
@@ -269,16 +267,14 @@ export const DashboardView: React.FC = () => {
           </div>
 
           {/* 02 — Overstock Risk */}
-          <div className="bg-white border border-amber-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-amber-300 feedback-card">
+          <div className="bg-white border-2 border-amber-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-amber-300 feedback-card">
             <div>
-              <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-3">
-                <div>
-                  <span className="type-detail font-bold text-amber-800 tracking-wider block">02 — 庫存積壓警示</span>
-                  <span className="type-detail text-amber-800 opacity-80 tracking-wider block">OVERSTOCK RISK</span>
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="type-detail font-bold text-amber-800 tracking-wider">02 — 庫存積壓警示</span>
+                  <span className="type-detail font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded shrink-0">資金呆滯</span>
                 </div>
-                <span className="type-detail font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded shrink-0">
-                  資金呆滯
-                </span>
+                <span className="type-detail text-amber-800 opacity-80 tracking-wider block">OVERSTOCK RISK</span>
               </div>
 
               <h3 title={overstockProduct?.name} className="type-item-title truncate-reveal text-slate-900 mb-1">
@@ -340,16 +336,14 @@ export const DashboardView: React.FC = () => {
           </div>
 
           {/* 03 — Purchasing Opportunity */}
-          <div className="bg-emerald-900/5 border border-emerald-900/20 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-700/40 feedback-card relative overflow-hidden">
+          <div className="bg-white border-2 border-emerald-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-300 feedback-card">
             <div>
-              <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-3">
-                <div>
-                  <span className="type-detail font-bold text-emerald-800 tracking-wider block">03 — 採購商機</span>
-                  <span className="type-detail text-emerald-800 opacity-80 tracking-wider block">PURCHASING OPPORTUNITY</span>
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="type-detail font-bold text-emerald-800 tracking-wider">03 — 採購商機</span>
+                  <span className="type-detail font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded shrink-0">固定促銷示例</span>
                 </div>
-                <span className="type-detail font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded shrink-0">
-                  固定促銷示例
-                </span>
+                <span className="type-detail text-emerald-800 opacity-80 tracking-wider block">PURCHASING OPPORTUNITY</span>
               </div>
 
               <h3 title="沛森生化「艾瑪絲夏季促銷」現折 8%" className="type-item-title truncate-reveal text-slate-900 mb-1">
@@ -362,7 +356,7 @@ export const DashboardView: React.FC = () => {
               </p>
 
               {/* Data signals */}
-              <div className="space-y-1.5 type-detail bg-white/80 p-3 rounded-xl border border-emerald-900/10 mb-4 font-mono">
+              <div className="space-y-1.5 type-detail bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 mb-4 font-mono">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="text-slate-500 type-detail">示例截止日（非倒數）</span>
                   <span className="font-bold text-emerald-800 type-detail">10 月 15 日</span>
@@ -388,7 +382,7 @@ export const DashboardView: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div className="space-y-2 pt-2 border-t border-emerald-900/10">
+            <div className="space-y-2 pt-2 border-t border-slate-100">
               <button
                 onClick={() => setActiveTab('suppliers')}
                 className="type-label w-full py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
@@ -398,7 +392,7 @@ export const DashboardView: React.FC = () => {
               </button>
               <button
                 onClick={() => setActiveTab('insights')}
-                className="type-label w-full py-1.5 bg-white hover:bg-emerald-50 text-slate-700 border border-emerald-900/15 rounded-lg transition-colors cursor-pointer"
+                className="type-label w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
               >
                 查看 AI 採購建議示範
               </button>
