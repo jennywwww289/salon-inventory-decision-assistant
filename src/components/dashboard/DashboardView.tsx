@@ -109,7 +109,81 @@ export const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Today's Business Brief (今日 3 大關鍵決策事件) */}
+      {/* 2. Dashboard Inventory Overview (整體庫存現況指標) */}
+      <section className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <h2 className="type-section-title text-slate-900">門市庫存健康度總覽</h2>
+            <p className="type-detail text-slate-500">
+              全店共管理 <span className="type-number text-slate-800 font-mono">{inventorySummary.totalSkus}</span> 項品項，分布於 <span className="type-number text-slate-800 font-mono">{brands.length}</span> 個品牌、<span className="type-number text-slate-800 font-mono">{suppliers.length}</span> 家常規供應商
+            </p>
+          </div>
+          <div className="type-detail text-slate-600 font-mono">
+            總庫存價值 (進價)：NT$ <strong className="text-slate-800 font-bold">{formatNumber(inventorySummary.totalInventoryCost)}</strong>
+          </div>
+        </div>
+
+        {/* Status Breakdown Metric Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="type-detail font-medium text-slate-500 block mb-1">常備品項</span>
+            <div className="type-stat text-slate-800 font-mono tabular-nums">
+              {inventorySummary.totalSkus}
+              <span className="type-detail font-normal text-slate-500 ml-1">SKUs</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200">
+            <span className="type-detail font-semibold text-emerald-800 block mb-1">庫存健康</span>
+            <div className="type-stat text-emerald-700 font-mono tabular-nums">
+              {inventorySummary.healthyCount}
+              <span className="type-detail font-normal text-emerald-700 ml-1">項</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200">
+            <span className="type-detail font-semibold text-amber-800 block mb-1">低水位庫存</span>
+            <div className="type-stat text-amber-700 font-mono tabular-nums">
+              {inventorySummary.lowCount}
+              <span className="type-detail font-normal text-amber-700 ml-1">項</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-rose-50/70 border border-rose-200">
+            <span className="type-detail font-semibold text-rose-800 block mb-1">斷貨危機</span>
+            <div className="type-stat text-rose-600 font-mono tabular-nums">
+              {inventorySummary.criticalCount}
+              <span className="type-detail font-normal text-rose-600 ml-1">項</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200">
+            <span className="type-detail font-semibold text-purple-800 block mb-1">積壓過多</span>
+            <div className="type-stat text-purple-700 font-mono tabular-nums">
+              {inventorySummary.overstockCount}
+              <span className="type-detail font-normal text-purple-700 ml-1">項</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200">
+            <span className="type-detail font-semibold text-blue-800 block mb-1">在途訂單</span>
+            <div className="type-stat text-blue-700 font-mono tabular-nums">
+              {inventorySummary.incomingCount}
+              <span className="type-detail font-normal text-blue-700 ml-1">瓶</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="type-detail font-medium text-slate-500 block mb-1">總庫存件數</span>
+            <div className="type-stat text-slate-700 font-mono tabular-nums">
+              {formatNumber(inventorySummary.totalStockUnits)}
+              <span className="type-detail font-normal text-slate-500 ml-1">件</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Today's Business Brief (今日 3 大關鍵決策事件) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -330,80 +404,6 @@ export const DashboardView: React.FC = () => {
               >
                 查看 AI 採購建議示範
               </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Dashboard Inventory Overview (整體庫存現況指標) */}
-      <section className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-          <div>
-            <h2 className="type-section-title text-slate-900">門市庫存健康度總覽</h2>
-            <p className="type-detail text-slate-500">
-              全店共管理 <span className="type-number text-slate-800 font-mono">{inventorySummary.totalSkus}</span> 項品項，分布於 <span className="type-number text-slate-800 font-mono">{brands.length}</span> 個品牌、<span className="type-number text-slate-800 font-mono">{suppliers.length}</span> 家常規供應商
-            </p>
-          </div>
-          <div className="type-detail text-slate-600 font-mono">
-            總庫存價值 (進價)：NT$ <strong className="text-slate-800 font-bold">{formatNumber(inventorySummary.totalInventoryCost)}</strong>
-          </div>
-        </div>
-
-        {/* Status Breakdown Metric Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="type-detail font-medium text-slate-500 block mb-1">常備品項</span>
-            <div className="type-stat text-slate-800 font-mono tabular-nums">
-              {inventorySummary.totalSkus}
-              <span className="type-detail font-normal text-slate-500 ml-1">SKUs</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200">
-            <span className="type-detail font-semibold text-emerald-800 block mb-1">庫存健康</span>
-            <div className="type-stat text-emerald-700 font-mono tabular-nums">
-              {inventorySummary.healthyCount}
-              <span className="type-detail font-normal text-emerald-700 ml-1">項</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200">
-            <span className="type-detail font-semibold text-amber-800 block mb-1">低水位庫存</span>
-            <div className="type-stat text-amber-700 font-mono tabular-nums">
-              {inventorySummary.lowCount}
-              <span className="type-detail font-normal text-amber-700 ml-1">項</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-rose-50/70 border border-rose-200">
-            <span className="type-detail font-semibold text-rose-800 block mb-1">斷貨危機</span>
-            <div className="type-stat text-rose-600 font-mono tabular-nums">
-              {inventorySummary.criticalCount}
-              <span className="type-detail font-normal text-rose-600 ml-1">項</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-purple-50/60 border border-purple-200">
-            <span className="type-detail font-semibold text-purple-800 block mb-1">積壓過多</span>
-            <div className="type-stat text-purple-700 font-mono tabular-nums">
-              {inventorySummary.overstockCount}
-              <span className="type-detail font-normal text-purple-700 ml-1">項</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200">
-            <span className="type-detail font-semibold text-blue-800 block mb-1">在途訂單</span>
-            <div className="type-stat text-blue-700 font-mono tabular-nums">
-              {inventorySummary.incomingCount}
-              <span className="type-detail font-normal text-blue-700 ml-1">瓶</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <span className="type-detail font-medium text-slate-500 block mb-1">總庫存件數</span>
-            <div className="type-stat text-slate-700 font-mono tabular-nums">
-              {formatNumber(inventorySummary.totalStockUnits)}
-              <span className="type-detail font-normal text-slate-500 ml-1">件</span>
             </div>
           </div>
         </div>
